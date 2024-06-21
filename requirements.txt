@@ -1,0 +1,45 @@
+# Flask 및 관련 확장
+Flask==2.3.2
+Flask-SQLAlchemy==3.0.3
+Flask-Migrate==4.0.4
+Flask-Login==0.6.2
+Flask-WTF==1.1.1
+Flask-SocketIO==5.3.4
+
+# 데이터베이스
+psycopg2-binary==2.9.6
+SQLAlchemy==2.0.15
+
+# 환경 변수 관리
+python-dotenv==1.0.0
+
+# 비밀번호 해싱
+Werkzeug==2.3.4
+
+# 폼 처리
+WTForms==3.0.1
+
+# API 및 데이터 처리
+requests==2.31.0
+marshmallow==3.19.0
+
+# 이미지 처리 (필요한 경우)
+Pillow==9.5.0
+
+# 백그라운드 작업 (필요한 경우)
+celery==5.3.0
+
+# 테스팅
+pytest==7.3.1
+
+# 개발 도구
+python-dateutil==2.8.2
+
+# 웹소켓 (실시간 통신)
+eventlet==0.33.3
+
+# WSGI 서버
+gunicorn==20.1.0
+
+# 보안
+Flask-Talisman==1.0.0

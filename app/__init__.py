@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, render_template
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 from flask_migrate import Migrate
@@ -34,18 +34,25 @@ def create_app(config_name='development'):
     socketio.init_app(app)
 
     # 블루프린트 등록
-    from app.views import auth, user, product, live_stream, cart, payment
-    app.register_blueprint(auth.bp)
-    app.register_blueprint(user.bp)
+    from app.views import auth#, user, product, live_stream, cart, payment
+    app.register_blueprint(auth.auth)
+    """ app.register_blueprint(user.bp)
     app.register_blueprint(product.bp)
     app.register_blueprint(live_stream.bp)
     app.register_blueprint(cart.bp)
-    app.register_blueprint(payment.bp)
+    app.register_blueprint(payment.bp) """
 
     # 사용자 로더 콜백 설정
     from app.models.user import User
     @login_manager.user_loader
     def load_user(user_id):
         return User.query.get(int(user_id))
+    
+    @app.route('/')
+    def index():
+        """ products = Product.query.limit(8).all()
+        popular_products = Product.query.order_by(Product.sales_count.desc()).limit(4).all() """
+        #return render_template('index.html'""" , products=products, popular_products=popular_products """)
+        return render_template('index.html')
 
     return app

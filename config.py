@@ -10,6 +10,7 @@ class Config:
     """기본 설정"""
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'you-will-never-guess'
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+    SQLALCHEMY_DATABASE_URI = 'postgresql://kyounje:9350/live_commerce'
     
     # 이메일 설정 (필요한 경우)
     MAIL_SERVER = os.environ.get('MAIL_SERVER')
@@ -28,8 +29,7 @@ class Config:
 class DevelopmentConfig(Config):
     """개발 환경 설정"""
     DEBUG = True
-    SQLALCHEMY_DATABASE_URI = os.environ.get('DEV_DATABASE_URL') or \
-        'postgresql://localhost/live_commerce_dev'
+    SQLALCHEMY_DATABASE_URI = 'postgresql://kyounje:9350@localhost/live_commerce'
 
 class TestingConfig(Config):
     """테스트 환경 설정"""

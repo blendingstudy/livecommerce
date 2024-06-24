@@ -9,12 +9,16 @@ def register():
         return redirect(url_for('main.index'))
     form = RegistrationForm()
     if form.validate_on_submit():
-        user = User(username=form.username.data, email=form.email.data)
-        user.set_password(form.password.data)
+        user = User(
+            username=form.username.data,
+            email=form.email.data,
+            password=form.password.data,
+            is_seller=(form.user_type.data == 'seller')
+        )
         db.session.add(user)
         db.session.commit()
         flash('회원가입이 완료되었습니다. 로그인해주세요.', 'success')
-        return redirect(url_for('auth.login'))
+        return redirect(url_for('auth.login_route'))
     return render_template('auth/register.html', form=form)
 
 def login():
@@ -27,7 +31,7 @@ def login():
             login_user(user, remember=form.remember.data)
             flash('로그인되었습니다.', 'success')
             next_page = request.args.get('next')
-            return redirect(next_page or url_for('main.index'))
+            return redirect(next_page or url_for('index'))
         else:
             flash('이메일 주소나 비밀번호가 올바르지 않습니다.', 'danger')
     return render_template('auth/login.html', form=form)
@@ -36,7 +40,7 @@ def login():
 def logout():
     logout_user()
     flash('로그아웃되었습니다.', 'info')
-    return redirect(url_for('main.index'))
+    return redirect(url_for('index'))
 
 @login_required
 def profile():

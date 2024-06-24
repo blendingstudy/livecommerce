@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block title %}제품 목록{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="mb-4">제품 목록</h1>
+
+    {% if current_user.is_authenticated and current_user.is_seller %}
+    <div class="mb-4">
+        <a href="{{ url_for('product.product_create') }}" class="btn btn-primary">새 제품 등록</a>
+    </div>
+    {% endif %}
+
+    <!-- 카테고리 필터 추가 -->
+    <div class="mb-4">
+        <h5>카테고리</h5>
+        <div class="btn-group" role="group" aria-label="카테고리 필터">
+            <a href="{{ url_for('product.products_list') }}" class="btn btn-outline-primary {% if not selected_category %}active{% endif %}">전체</a>
+            {% for category in categories %}
+            <a href="{{ url_for('product.products_list', category=category.name) }}" class="btn btn-outline-primary {% if selected_category == category.name %}active{% endif %}">{{ category.name }}</a>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="row row-cols-1 row-cols-md-3 row-cols-lg-4 g-4">
+        {% for product in products.items %}
+        <div class="col">
+            <div class="card h-100">
+                {% if product.image_url %}
+                <img src="{{ product.image_url }}" class="card-img-top" alt="{{ product.name }}">
+                {% else %}
+                <img src="{{ url_for('static', filename='images/default_product.jpg') }}" class="card-img-top" alt="Default product image">
+                {% endif %}
+                <div class="card-body">
+                    <h5 class="card-title">{{ product.name }}</h5>
+                    <p class="card-text">{{ product.description[:100] }}{% if product.description|length > 100 %}...{% endif %}</p>
+                    <p class="card-text"><strong>가격:</strong> {{ product.price | round(2) }}원</p>
+                    <p class="card-text"><strong>재고:</strong> {{ product.stock }}개</p>
+                    <p class="card-text"><strong>카테고리:</strong> {{ product.category.name }}</p>
+                </div>
+                <div class="card-footer">
+                    <a href="{{ url_for('product.product_detail', product_id=product.id) }}" class="btn btn-primary btn-sm">상세 보기</a>
+                    {% if current_user.is_authenticated and current_user.id == product.seller_id %}
+                    <a href="{{ url_for('product.product_edit', product_id=product.id) }}" class="btn btn-secondary btn-sm">수정</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    {% if products.pages > 1 %}
+    <nav aria-label="Page navigation" class="mt-4">
+        <ul class="pagination justify-content-center">
+            {% for page in products.iter_pages() %}
+                {% if page %}
+                    {% if page != products.page %}
+                    <li class="page-item"><a class="page-link" href="{{ url_for('product.products_list', page=page, category=selected_category) }}">{{ page }}</a></li>
+                    {% else %}
+                    <li class="page-item active" aria-current="page"><span class="page-link">{{ page }}</span></li>
+                    {% endif %}
+                {% else %}
+                    <li class="page-item disabled"><span class="page-link">...</span></li>
+                {% endif %}
+            {% endfor %}
+        </ul>
+    </nav>
+    {% endif %}
+</div>
+{% endblock %}

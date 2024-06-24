@@ -14,23 +14,49 @@
                     <form method="POST" action="{{ url_for('auth.register_route') }}">
                         {{ form.hidden_tag() }}
                         <div class="mb-3">
-                            <label for="username" class="form-label">사용자 이름</label>
-                            <input type="text" class="form-control" id="username" name="username" required>
+                            {{ form.username.label(class="form-label") }}
+                            {{ form.username(class="form-control") }}
+                            {% for error in form.username.errors %}
+                                <span class="text-danger">{{ error }}</span>
+                            {% endfor %}
                         </div>
                         <div class="mb-3">
-                            <label for="email" class="form-label">이메일 주소</label>
-                            <input type="email" class="form-control" id="email" name="email" required>
+                            {{ form.email.label(class="form-label") }}
+                            {{ form.email(class="form-control") }}
+                            {% for error in form.email.errors %}
+                                <span class="text-danger">{{ error }}</span>
+                            {% endfor %}
                         </div>
                         <div class="mb-3">
-                            <label for="password" class="form-label">비밀번호</label>
-                            <input type="password" class="form-control" id="password" name="password" required>
+                            {{ form.password.label(class="form-label") }}
+                            {{ form.password(class="form-control") }}
+                            {% for error in form.password.errors %}
+                                <span class="text-danger">{{ error }}</span>
+                            {% endfor %}
                         </div>
                         <div class="mb-3">
-                            <label for="confirm_password" class="form-label">비밀번호 확인</label>
-                            <input type="password" class="form-control" id="confirm_password" name="confirm_password" required>
+                            {{ form.confirm_password.label(class="form-label") }}
+                            {{ form.confirm_password(class="form-control") }}
+                            {% for error in form.confirm_password.errors %}
+                                <span class="text-danger">{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                        <div class="mb-3">
+                            {{ form.user_type.label(class="form-label") }}
+                            <div>
+                                {% for subfield in form.user_type %}
+                                    <div class="form-check form-check-inline">
+                                        {{ subfield(class="form-check-input") }}
+                                        {{ subfield.label(class="form-check-label") }}
+                                    </div>
+                                {% endfor %}
+                            </div>
+                            {% for error in form.user_type.errors %}
+                                <span class="text-danger">{{ error }}</span>
+                            {% endfor %}
                         </div>
                         <div class="d-grid">
-                            <button type="submit" class="btn btn-primary">회원가입</button>
+                            {{ form.submit(class="btn btn-primary") }}
                         </div>
                     </form>
                 </div>
@@ -41,20 +67,4 @@
         </div>
     </div>
 </div>
-{% endblock %}
-
-{% block scripts %}
-{{ super() }}
-<script>
-    // 클라이언트 측 유효성 검사
-    document.querySelector('form').addEventListener('submit', function(e) {
-        var password = document.getElementById('password');
-        var confirm_password = document.getElementById('confirm_password');
-        
-        if (password.value != confirm_password.value) {
-            e.preventDefault();
-            alert('비밀번호가 일치하지 않습니다.');
-        }
-    });
-</script>
 {% endblock %}

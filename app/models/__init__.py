@@ -6,7 +6,7 @@ from app import db
 from .user import User
 
 # Product 모델 임포트
-#from .product import Product
+from .product import Product
 
 # LiveStream 모델 임포트
 #from .live_stream import LiveStream
@@ -25,9 +25,9 @@ from .user import User
 # 모든 모델을 다른 모듈에서 쉽게 임포트할 수 있도록 __all__ 리스트를 정의합니다.
 __all__ = [
     'db',
-    'User'""" ,
-    'Product',
-    'LiveStream',
+    'User',
+    'Product'
+    """'LiveStream',
     'Cart',
     'CartItem',
     'Order',

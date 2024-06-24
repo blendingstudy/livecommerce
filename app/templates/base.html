@@ -20,15 +20,20 @@
                 </button>
                 <div class="collapse navbar-collapse" id="navbarNav">
                     <ul class="navbar-nav me-auto">
-                        <!-- -->
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('product.products_list') }}">상품</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link">라이브</a>
+                        </li>
                     </ul>
                     <ul class="navbar-nav">
                         {% if current_user.is_authenticated %}
                             <li class="nav-item">
-                                <a class="nav-link" href="{{ url_for('') }}">장바구니</a>
+                                <a class="nav-link">장바구니</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" href="{{ url_for('') }}">내 정보</a>
+                                <a class="nav-link">내 정보</a>
                             </li>
                             <li class="nav-item">
                                 <a class="nav-link" href="{{ url_for('auth.logout_route') }}">로그아웃</a>

@@ -12,8 +12,8 @@ class User(UserMixin, db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
     # 관계 설정
-    """ products = db.relationship('Product', backref='seller', lazy='dynamic')
-    orders = db.relationship('Order', backref='buyer', lazy='dynamic')
+    #products = db.relationship('Product', backref='seller', lazy='dynamic')
+    """orders = db.relationship('Order', backref='buyer', lazy='dynamic')
     cart_items = db.relationship('CartItem', backref='user', lazy='dynamic') """
 
     def __init__(self, username, email, password, is_seller=False):
@@ -32,7 +32,7 @@ class User(UserMixin, db.Model):
         return f'<User {self.username}>'
 
     # 판매자 권한 확인
-    def is_seller(self):
+    def check_is_seller(self):
         return self.is_seller
 
     """ # 장바구니에 상품 추가

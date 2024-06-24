@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+
+{% block title %}{{ product.name }} 수정{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="mb-4">제품 수정: {{ product.name }}</h1>
+    <form method="POST" enctype="multipart/form-data">
+        {{ form.hidden_tag() }}
+        <div class="mb-3">
+            {{ form.name.label(class="form-label") }}
+            {{ form.name(class="form-control") }}
+            {% for error in form.name.errors %}
+            <span class="text-danger">{{ error }}</span>
+            {% endfor %}
+        </div>
+        <div class="mb-3">
+            {{ form.description.label(class="form-label") }}
+            {{ form.description(class="form-control", rows="4") }}
+            {% for error in form.description.errors %}
+            <span class="text-danger">{{ error }}</span>
+            {% endfor %}
+        </div>
+        <div class="mb-3">
+            {{ form.price.label(class="form-label") }}
+            {{ form.price(class="form-control") }}
+            {% for error in form.price.errors %}
+            <span class="text-danger">{{ error }}</span>
+            {% endfor %}
+        </div>
+        <div class="mb-3">
+            {{ form.stock.label(class="form-label") }}
+            {{ form.stock(class="form-control") }}
+            {% for error in form.stock.errors %}
+            <span class="text-danger">{{ error }}</span>
+            {% endfor %}
+        </div>
+        <div class="mb-3">
+            {{ form.category.label(class="form-label") }}
+            {{ form.category(class="form-select") }}
+            {% for error in form.category.errors %}
+                <span class="text-danger">{{ error }}</span>
+            {% endfor %}
+        </div>
+        <div class="mb-3">
+            {{ form.image.label(class="form-label") }}
+            {{ form.image(class="form-control") }}
+            {% for error in form.image.errors %}
+            <span class="text-danger">{{ error }}</span>
+            {% endfor %}
+            {% if product.image_url %}
+            <div class="mt-2">
+                <img src="{{ product.image_url }}" alt="Current product image" class="img-thumbnail" style="max-width: 200px; max-height: 200px;">
+                <p class="mt-1">현재 이미지</p>
+            </div>
+            {% endif %}
+        </div>
+        <div class="mb-3">
+            {{ form.submit(class="btn btn-primary") }}
+            <a href="{{ url_for('product.product_detail', product_id=product.id) }}" class="btn btn-secondary">취소</a>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+    // 이미지 프리뷰 기능
+    document.getElementById('image').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const preview = document.createElement('img');
+                preview.src = e.target.result;
+                preview.style.maxWidth = '200px';
+                preview.style.maxHeight = '200px';
+                preview.classList.add('img-thumbnail', 'mt-2');
+                const previewContainer = document.getElementById('image').parentNode;
+                const existingPreview = previewContainer.querySelector('img:not(.img-thumbnail)');
+                if (existingPreview) {
+                    previewContainer.removeChild(existingPreview);
+                }
+                const newPreviewLabel = document.createElement('p');
+                newPreviewLabel.textContent = '새 이미지 프리뷰';
+                newPreviewLabel.classList.add('mt-1');
+                previewContainer.appendChild(preview);
+                previewContainer.appendChild(newPreviewLabel);
+            }
+            reader.readAsDataURL(file);
+        }
+    });
+</script>
+{% endblock %}

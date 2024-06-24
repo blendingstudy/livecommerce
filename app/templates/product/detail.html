@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block title %}{{ product.name }} - 제품 상세{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-6">
+            {% if product.image_url %}
+            <img src="{{ product.image_url }}" class="img-fluid rounded" alt="{{ product.name }}">
+            {% else %}
+            <img src="{{ url_for('static', filename='images/default_product.jpg') }}" class="img-fluid rounded" alt="Default product image">
+            {% endif %}
+        </div>
+        <div class="col-md-6">
+            <h1 class="mb-3">{{ product.name }}</h1>
+            <p class="lead">{{ product.description }}</p>
+            <p><strong>가격:</strong> {{ product.price | round(2) }}원</p>
+            <p><strong>재고:</strong> {{ product.stock }}개</p>
+            <p><strong>카테고리:</strong> {{ product.category.name }}</p>
+            <p><strong>판매자:</strong> {{ product.seller.username }}</p>
+            
+            {% if current_user.is_authenticated %}
+                {% if current_user.id == product.seller_id %}
+                    <a href="{{ url_for('product.product_edit', product_id=product.id) }}" class="btn btn-primary">수정</a>
+                    <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal">
+                        삭제
+                    </button>
+                {% else %}
+                    <form action="{{ url_for('cart.add_to_cart', product_id=product.id) }}" method="POST">
+                        <div class="input-group mb-3">
+                            <input type="number" name="quantity" class="form-control" value="1" min="1" max="{{ product.stock }}">
+                            <button type="submit" class="btn btn-primary">장바구니에 추가</button>
+                        </div>
+                    </form>
+                {% endif %}
+            {% else %}
+                <p>구매하려면 <a href="{{ url_for('auth.login') }}">로그인</a>해주세요.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- 제품 리뷰 섹션 (옵션) -->
+    <div class="mt-5">
+        <h2>리뷰</h2>
+        <!-- 여기에 리뷰 목록과 리뷰 작성 폼을 추가할 수 있습니다 -->
+    </div>
+</div>
+
+<!-- 삭제 확인 모달 -->
+{% if current_user.is_authenticated and current_user.id == product.seller_id %}
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteModalLabel">제품 삭제 확인</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                정말로 이 제품을 삭제하시겠습니까?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+                <form action="{{ url_for('product.product_delete', product_id=product.id) }}" method="POST">
+                    <button type="submit" class="btn btn-danger">삭제</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

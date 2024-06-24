@@ -34,16 +34,18 @@ def create_app(config_name='development'):
     socketio.init_app(app)
 
     # 블루프린트 등록
-    from app.views import auth#, user, product, live_stream, cart, payment
+    from app.views import auth, product#, user, live_stream, cart, payment
     app.register_blueprint(auth.auth)
-    """ app.register_blueprint(user.bp)
-    app.register_blueprint(product.bp)
-    app.register_blueprint(live_stream.bp)
-    app.register_blueprint(cart.bp)
-    app.register_blueprint(payment.bp) """
+    #app.register_blueprint(user.bp)
+    app.register_blueprint(product.product)
+    #app.register_blueprint(live_stream.bp)
+    #app.register_blueprint(cart.bp)
+    #app.register_blueprint(payment.bp)
+
+    from app.models.user import User
+    from app.models.product import Product
 
     # 사용자 로더 콜백 설정
-    from app.models.user import User
     @login_manager.user_loader
     def load_user(user_id):
         return User.query.get(int(user_id))

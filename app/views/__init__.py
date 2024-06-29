@@ -2,7 +2,7 @@
 from .auth import auth as auth_bp
 #from .user import bp as user_bp
 from .product import product as product_bp
-#from .live_stream import bp as live_stream_bp
+from .live_stream import live_stream as live_stream_bp
 #from .cart import bp as cart_bp
 #from .payment import bp as payment_bp
 

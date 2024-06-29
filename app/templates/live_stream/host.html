@@ -1,0 +1,237 @@
+{% extends "base.html" %}
+
+{% block title %}라이브 스트림 호스팅 - {{ stream.title }}{% endblock %}
+
+{% block styles %}
+{{ super() }}
+<style>
+    #videoContainer {
+        position: relative;
+        width: 640px;
+        height: 480px;
+        margin: 0 auto;
+    }
+
+    #localVideo {
+        width: 100%;
+        height: 100%;
+    }
+
+    #chatContainer {
+        height: 300px;
+        overflow-y: auto;
+        border: 1px solid #ddd;
+        padding: 10px;
+        margin-bottom: 10px;
+    }
+
+    #productList {
+        max-height: 300px;
+        overflow-y: auto;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1>{{ stream.title }}</h1>
+    <p>{{ stream.description }}</p>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div id="videoContainer">
+                <video id="localVideo" autoplay muted></video>
+            </div>
+            <div class="mt-3">
+                <button id="startStreamBtn" class="btn btn-primary">스트림 시작</button>
+                <button id="endStreamBtn" class="btn btn-danger" style="display: none;">스트림 종료</button>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <h3>채팅</h3>
+            <div id="chatContainer"></div>
+            <div class="input-group">
+                <input type="text" id="chatInput" class="form-control" placeholder="메시지 입력...">
+                <button class="btn btn-outline-secondary" type="button" id="sendChatBtn">전송</button>
+            </div>
+
+            <h3 class="mt-4">제품 목록</h3>
+            <div id="productList">
+                {% for product in stream.products %}
+                <div class="card mb-2">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ product.name }}</h5>
+                        <p class="card-text">가격: {{ product.price }}</p>
+                        <button class="btn btn-sm btn-primary showProductBtn" data-product-id="{{ product.id }}">제품 표시</button>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.6.1/socket.io.js"></script>
+<script>
+    console.log('Host script loaded');
+    const socket = io({
+        transports: ['websocket'],
+        upgrade: false
+    });
+    const streamId = "{{ stream.id }}";
+    let isStreaming = false;
+    let localStream;
+    let peerConnections = {};
+    const configuration = {'iceServers': [{'urls': 'stun:stun.l.google.com:19302'}]};
+
+    socket.on('connect', () => {
+        console.log('Socket.IO connected');
+        socket.emit('create_room', { streamId: streamId });
+    });
+
+    socket.on('connect_error', (error) => {
+        console.error('Socket.IO connection error:', error);
+    });
+
+    async function getMedia() {
+        try {
+            console.log('Attempting to get user media');
+            const constraints = {
+                video: {
+                    width: { ideal: 640 },
+                    height: { ideal: 480 }
+                },
+                audio: true
+            };
+            localStream = await navigator.mediaDevices.getUserMedia(constraints);
+            document.getElementById('localVideo').srcObject = localStream;
+            console.log('User media acquired successfully');
+            
+            // 비디오 트랙 설정 로깅
+            localStream.getVideoTracks().forEach(track => {
+                console.log('Video track settings:', track.getSettings());
+            });
+        } catch (error) {
+            console.error('Failed to get user media:', error);
+            handleMediaError(error);
+        }
+    }
+
+    function handleMediaError(error) {
+        let errorMessage = '미디어 장치에 접근할 수 없습니다. ';
+        if (error.name === 'NotFoundError' || error.name === 'DevicesNotFoundError') {
+            errorMessage += '카메라 또는 마이크를 찾을 수 없습니다. 장치가 연결되어 있는지 확인해주세요.';
+        } else if (error.name === 'NotAllowedError' || error.name === 'PermissionDeniedError') {
+            errorMessage += '카메라와 마이크 사용 권한이 거부되었습니다. 브라우저 설정에서 권한을 허용해주세요.';
+        } else if (error.name === 'NotReadableError' || error.name === 'TrackStartError') {
+            errorMessage += '카메라 또는 마이크에 접근할 수 없습니다. 다른 애플리케이션에서 사용 중인지 확인해주세요.';
+        } else {
+            errorMessage += '알 수 없는 오류가 발생했습니다. 브라우저를 새로고침하거나 다시 시도해주세요.' + error.name;
+        }
+        alert(errorMessage);
+    }
+
+    document.getElementById('startStreamBtn').addEventListener('click', async () => {
+        console.log('Start stream button clicked');
+        if (!localStream) {
+            await getMedia();
+        }
+        if (localStream) {
+            localStream.getTracks().forEach(track => {
+                console.log(`Track: ${track.kind}, enabled: ${track.enabled}, muted: ${track.muted}`);
+            });
+            socket.emit('start_stream', { streamId: streamId });
+            document.getElementById('startStreamBtn').style.display = 'none';
+            document.getElementById('endStreamBtn').style.display = 'inline-block';
+            isStreaming = true;
+        }
+    });
+
+    document.getElementById('endStreamBtn').addEventListener('click', () => {
+        socket.emit('end_stream', { streamId: streamId });
+        localStream.getTracks().forEach(track => track.stop());
+        document.getElementById('localVideo').srcObject = null;
+        document.getElementById('startStreamBtn').style.display = 'inline-block';
+        document.getElementById('endStreamBtn').style.display = 'none';
+        isStreaming = false;
+    });
+
+    socket.on('viewer_joined', async (viewerId) => {
+        console.log('New viewer joined:', viewerId);
+        const peerConnection = new RTCPeerConnection(configuration);
+        peerConnections[viewerId] = peerConnection;
+
+        peerConnection.onconnectionstatechange = (event) => {
+            console.log(`Connection state change for viewer ${viewerId}:`, peerConnection.connectionState);
+        };
+
+        peerConnection.oniceconnectionstatechange = (event) => {
+            console.log(`ICE connection state change for viewer ${viewerId}:`, peerConnection.iceConnectionState);
+        };
+
+        localStream.getTracks().forEach(track => {
+            console.log(`Adding ${track.kind} track to peer connection`);
+            const sender = peerConnection.addTrack(track, localStream);
+            console.log(`Track added: ${track.kind}, enabled: ${track.enabled}, muted: ${track.muted}`);
+        });
+
+        peerConnection.onicecandidate = (event) => {
+            if (event.candidate) {
+                console.log('Sending ICE candidate to viewer');
+                socket.emit('ice_candidate', { to: viewerId, candidate: event.candidate });
+            }
+        };
+
+        try {
+            const offerOptions = {
+                offerToReceiveAudio: true,
+                offerToReceiveVideo: true
+            };
+            const offer = await peerConnection.createOffer(offerOptions);
+            await peerConnection.setLocalDescription(offer);
+            console.log('Sending offer to viewer');
+            socket.emit('offer', { to: viewerId, offer: peerConnection.localDescription });
+        } catch (error) {
+            console.error('Error creating offer:', error);
+        }
+    });
+
+    socket.on('answer', async (data) => {
+        console.log('Received answer from viewer:', data.from);
+        const peerConnection = peerConnections[data.from];
+        await peerConnection.setRemoteDescription(new RTCSessionDescription(data.answer));
+    });
+
+    socket.on('ice_candidate', (data) => {
+        console.log('Received ICE candidate from viewer:', data.from);
+        const peerConnection = peerConnections[data.from];
+        peerConnection.addIceCandidate(new RTCIceCandidate(data.candidate));
+    });
+
+    document.getElementById('sendChatBtn').addEventListener('click', () => {
+        const message = document.getElementById('chatInput').value;
+        if (message.trim() !== '') {
+            socket.emit('chat_message', { streamId: streamId, message: message });
+            document.getElementById('chatInput').value = '';
+        }
+    });
+
+    socket.on('new_chat_message', (data) => {
+        const chatContainer = document.getElementById('chatContainer');
+        const messageElement = document.createElement('p');
+        messageElement.textContent = `${data.username}: ${data.message}`;
+        chatContainer.appendChild(messageElement);
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+    });
+
+    document.querySelectorAll('.showProductBtn').forEach(button => {
+        button.addEventListener('click', (event) => {
+            const productId = event.target.dataset.productId;
+            socket.emit('show_product', { streamId: streamId, productId: productId });
+        });
+    });
+</script>
+{% endblock %}

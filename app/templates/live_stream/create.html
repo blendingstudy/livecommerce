@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+
+{% block title %}새 라이브 스트림 생성{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="mb-4">새 라이브 스트림 생성</h1>
+
+    <form method="POST" id="streamForm">
+        {{ form.hidden_tag() }}
+        
+        <div class="mb-3">
+            {{ form.title.label(class="form-label") }}
+            {{ form.title(class="form-control") }}
+        </div>
+
+        <div class="mb-3">
+            {{ form.description.label(class="form-label") }}
+            {{ form.description(class="form-control", rows=4) }}
+        </div>
+
+        <div class="mb-3">
+            {{ form.existing_products.label(class="form-label") }}
+            {{ form.existing_products(class="form-select", multiple=true, id="existingProducts") }}
+            <small class="form-text text-muted">Ctrl 키를 누른 채 클릭하여 여러 제품을 선택할 수 있습니다.</small>
+        </div>
+
+        <h3>새 제품 추가</h3>
+        <div id="newProductForm" class="mb-3">
+            <div class="mb-2">
+                <label class="form-label">제품명</label>
+                <input type="text" class="form-control" id="newProductName">
+            </div>
+            <div class="mb-2">
+                <label class="form-label">가격</label>
+                <input type="number" class="form-control" id="newProductPrice">
+            </div>
+            <div class="mb-2">
+                <label class="form-label">설명</label>
+                <textarea class="form-control" id="newProductDescription"></textarea>
+            </div>
+            <button type="button" id="addProductBtn" class="btn btn-secondary">새 제품 추가</button>
+        </div>
+
+        <div>
+            {{ form.submit(class="btn btn-primary") }}
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+    document.getElementById('addProductBtn').addEventListener('click', function() {
+        var name = document.getElementById('newProductName').value;
+        var price = document.getElementById('newProductPrice').value;
+        var description = document.getElementById('newProductDescription').value;
+
+        fetch('/add_product', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                name: name,
+                price: price,
+                description: description
+            }),
+        })
+        .then(response => response.json())
+        .then(data => {
+            var select = document.getElementById('existingProducts');
+            var option = new Option(data.name, data.id);
+            select.add(option);
+            option.selected = true;  // 새로 추가된 제품을 자동으로 선택
+
+            // 입력 필드 초기화
+            document.getElementById('newProductName').value = '';
+            document.getElementById('newProductPrice').value = '';
+            document.getElementById('newProductDescription').value = '';
+
+            alert('새 제품이 추가되었습니다.');
+        })
+        .catch((error) => {
+            console.error('Error:', error);
+            alert('제품 추가에 실패했습니다.');
+        });
+    });
+</script>
+{% endblock %}

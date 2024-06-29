@@ -9,7 +9,7 @@ from .user import User
 from .product import Product
 
 # LiveStream 모델 임포트
-#from .live_stream import LiveStream
+from .live_stream import LiveStream
 
 # Cart 모델 임포트
 #from .cart import Cart, CartItem

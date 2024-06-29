@@ -27,7 +27,7 @@
                         삭제
                     </button>
                 {% else %}
-                    <form action="{{ url_for('cart.add_to_cart', product_id=product.id) }}" method="POST">
+                    <form action="" method="POST"> <!-- 장바구니 -->
                         <div class="input-group mb-3">
                             <input type="number" name="quantity" class="form-control" value="1" min="1" max="{{ product.stock }}">
                             <button type="submit" class="btn btn-primary">장바구니에 추가</button>

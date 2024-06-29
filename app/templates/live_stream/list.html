@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block title %}라이브 스트림 목록{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="mb-4">라이브 스트림</h1>
+
+    <!-- 검색 폼 -->
+    <form action="{{ url_for('live_stream.search_streams') }}" method="GET" class="mb-4">
+        <div class="input-group">
+            <input type="text" name="q" class="form-control" placeholder="스트림 검색..." value="{{ request.args.get('q', '') }}">
+            <button type="submit" class="btn btn-primary">검색</button>
+        </div>
+    </form>
+
+    {% if current_user.is_authenticated and current_user.is_seller %}
+    <div class="mb-4">
+        <a href="{{ url_for('live_stream.stream_create') }}" class="btn btn-success">새 라이브 스트림 시작</a>
+    </div>
+    {% endif %}
+
+    {% if streams.items %}
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+        {% for stream in streams.items %}
+        <div class="col">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">{{ stream.title }}</h5>
+                    <h6 class="card-subtitle mb-2 text-muted">{{ stream.seller.username }}</h6>
+                    <p class="card-text">{{ stream.description[:100] }}{% if stream.description|length > 100 %}...{% endif %}</p>
+                    <p class="card-text"><small class="text-muted">시작: {{ stream.start_time.strftime('%Y-%m-%d %H:%M') }}</small></p>
+                    <p class="card-text"><small class="text-muted">시청자: {{ stream.viewer_count }}</small></p>
+                </div>
+                <div class="card-footer">
+                    <a href="{{ url_for('live_stream.stream_watch', stream_id=stream.id) }}" class="btn btn-primary btn-sm">시청하기</a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- 페이지네이션 -->
+    <nav aria-label="Page navigation" class="mt-4">
+        <ul class="pagination justify-content-center">
+            {% for page in streams.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
+                {% if page %}
+                    {% if page != streams.page %}
+                    <li class="page-item"><a class="page-link" href="{{ url_for('live_stream.streams_list', page=page) }}">{{ page }}</a></li>
+                    {% else %}
+                    <li class="page-item active" aria-current="page"><span class="page-link">{{ page }}</span></li>
+                    {% endif %}
+                {% else %}
+                    <li class="page-item disabled"><span class="page-link">...</span></li>
+                {% endif %}
+            {% endfor %}
+        </ul>
+    </nav>
+    {% else %}
+    <p>현재 진행 중인 라이브 스트림이 없습니다.</p>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import FileField, FloatField, IntegerField, RadioField, SelectField, StringField, PasswordField, BooleanField, SubmitField, TextAreaField, ValidationError
+from wtforms import DateTimeField, FieldList, FileField, FloatField, FormField, IntegerField, RadioField, SelectField, SelectMultipleField, StringField, PasswordField, BooleanField, SubmitField, TextAreaField, ValidationError
 from wtforms.validators import DataRequired, Email as EmailValidator, EqualTo, Length, NumberRange
 from flask_wtf.file import FileAllowed
 
@@ -47,3 +47,15 @@ class ProductForm(FlaskForm):
     def __init__(self, *args, **kwargs):
         super(ProductForm, self).__init__(*args, **kwargs)
         self.category.choices = [(c.id, c.name) for c in Category.query.order_by('name')]
+
+class LiveStreamForm(FlaskForm):
+    title = StringField('스트림 제목', validators=[DataRequired(), Length(max=100)])
+    description = TextAreaField('설명', validators=[Length(max=500)])
+    existing_products = SelectMultipleField('기존 제품', coerce=int)
+    new_products = FieldList(FormField(ProductForm), min_entries=1)
+    scheduled_start_time = DateTimeField('예약 시작 시간', format='%Y-%m-%dT%H:%M', validators=[DataRequired()])
+    thumbnail = FileField('썸네일 이미지', validators=[FileAllowed(['jpg', 'png'], '이미지만 업로드 가능합니다.')])
+    submit = SubmitField('스트림 생성')
+
+    def __init__(self, *args, **kwargs):
+        super(LiveStreamForm, self).__init__(*args, **kwargs)

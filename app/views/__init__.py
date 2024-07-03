@@ -4,7 +4,7 @@ from .auth import auth as auth_bp
 from .product import product as product_bp
 from .live_stream import live_stream as live_stream_bp
 #from .cart import bp as cart_bp
-#from .payment import bp as payment_bp
+from .payment import payment as payment_bp
 
 # 필요한 경우 추가 블루프린트를 여기에 임포트합니다.
 

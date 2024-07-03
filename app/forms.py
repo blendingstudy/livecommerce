@@ -52,10 +52,11 @@ class LiveStreamForm(FlaskForm):
     title = StringField('스트림 제목', validators=[DataRequired(), Length(max=100)])
     description = TextAreaField('설명', validators=[Length(max=500)])
     existing_products = SelectMultipleField('기존 제품', coerce=int)
-    new_products = FieldList(FormField(ProductForm), min_entries=1)
-    scheduled_start_time = DateTimeField('예약 시작 시간', format='%Y-%m-%dT%H:%M', validators=[DataRequired()])
+    #new_products = FieldList(FormField(ProductForm), min_entries=1)
+    #scheduled_start_time = DateTimeField('예약 시작 시간', format='%Y-%m-%dT%H:%M', validators=[DataRequired()])
     thumbnail = FileField('썸네일 이미지', validators=[FileAllowed(['jpg', 'png'], '이미지만 업로드 가능합니다.')])
     submit = SubmitField('스트림 생성')
+    #category = SelectField('카테고리', coerce=int, validators=[DataRequired()])
 
     def __init__(self, *args, **kwargs):
         super(LiveStreamForm, self).__init__(*args, **kwargs)

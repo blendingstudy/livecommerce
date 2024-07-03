@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+
+{% block title %}주문 상태 - {{ order.id }}{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1 class="mb-4">주문 상태</h1>
+    
+    <div class="card mb-4">
+        <div class="card-header">
+            주문 번호: {{ order.id }}
+        </div>
+        <div class="card-body">
+            <h5 class="card-title">주문 상태: 
+                <span class="badge {% if order.status == 'pending' %}bg-warning
+                                   {% elif order.status == 'paid' %}bg-success
+                                   {% elif order.status == 'shipped' %}bg-info
+                                   {% elif order.status == 'delivered' %}bg-primary
+                                   {% elif order.status == 'cancelled' %}bg-danger
+                                   {% else %}bg-secondary{% endif %}">
+                    {{ order.status | capitalize }}
+                </span>
+            </h5>
+            <p class="card-text">주문 일시: {{ order.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</p>
+            <p class="card-text">총 금액: {{ order.total_price | format_currency }}</p>
+        </div>
+    </div>
+
+    <h2 class="mb-3">주문 상품</h2>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>상품명</th>
+                <th>수량</th>
+                <th>가격</th>
+                <th>소계</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in order.items %}
+            <tr>
+                <td>{{ item.product.name }}</td>
+                <td>{{ item.quantity }}</td>
+                <td>{{ item.price | format_currency }}</td>
+                <td>{{ (item.price * item.quantity) | format_currency }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+        <tfoot>
+            <tr>
+                <td colspan="3" class="text-end"><strong>총 금액</strong></td>
+                <td><strong>{{ order.total_price | format_currency }}</strong></td>
+            </tr>
+        </tfoot>
+    </table>
+
+    {% if order.payment %}
+    <h2 class="mb-3">결제 정보</h2>
+    <div class="card">
+        <div class="card-body">
+            <p><strong>결제 방법:</strong> {{ order.payment.payment_method }}</p>
+            <p><strong>결제 금액:</strong> {{ order.payment.amount | format_currency }}</p>
+            <p><strong>결제 상태:</strong> 
+                <span class="badge {% if order.payment.status == 'completed' %}bg-success
+                                   {% elif order.payment.status == 'pending' %}bg-warning
+                                   {% elif order.payment.status == 'failed' %}bg-danger
+                                   {% else %}bg-secondary{% endif %}">
+                    {{ order.payment.status | capitalize }}
+                </span>
+            </p>
+            <p><strong>거래 ID:</strong> {{ order.payment.transaction_id }}</p>
+            <p><strong>결제 일시:</strong> {{ order.payment.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</p>
+        </div>
+    </div>
+    {% endif %}
+
+    {% if order.status == 'pending' %}
+    <div class="mt-4">
+        <button id="cancelOrderBtn" class="btn btn-danger">주문 취소</button>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+    {% if order.status == 'pending' %}
+    document.getElementById('cancelOrderBtn').addEventListener('click', function() {
+        if (confirm('정말로 이 주문을 취소하시겠습니까?')) {
+            fetch('{{ url_for("payment.cancel_order", order_id=order.id) }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token() }}'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    alert('주문 취소 중 오류가 발생했습니다: ' + data.error);
+                } else {
+                    alert('주문이 성공적으로 취소되었습니다.');
+                    location.reload();
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('주문 취소 중 오류가 발생했습니다.');
+            });
+        }
+    });
+    {% endif %}
+</script>
+{% endblock %}

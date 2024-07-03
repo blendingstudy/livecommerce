@@ -15,7 +15,7 @@ from .live_stream import LiveStream
 #from .cart import Cart, CartItem
 
 # Order 모델 임포트
-#from .order import Order, OrderItem
+from .order import Order, OrderItem
 
 # Payment 모델 임포트
 #from .payment import Payment

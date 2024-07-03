@@ -64,3 +64,8 @@ def search_streams():
     streams = LiveStream.query.filter(LiveStream.title.contains(query) | LiveStream.description.contains(query)).order_by(LiveStream.start_time.desc()).paginate(page=page, per_page=10, error_out=False)
     return render_template('live_stream/search.html', streams=streams, query=query)
 
+@live_stream.route('/add_product', methods=['POST'])
+@login_required
+def stream_add_product():
+    return add_product()
+

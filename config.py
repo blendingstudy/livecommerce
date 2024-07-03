@@ -25,6 +25,9 @@ class Config:
 
     # 페이지네이션 설정
     ITEMS_PER_PAGE = 10
+    
+    IAMPORT_API_KEY = '0054575041252252'
+    IAMPORT_API_SECRET = '4y5PCQ5KoXFWRL7UltBruL2pvSnux1jjVFwo2L5hFqCNYH4AJGjXsCPbmGezWzwnWkHNP7Uv4ApDwb4w'
 
 class DevelopmentConfig(Config):
     """개발 환경 설정"""

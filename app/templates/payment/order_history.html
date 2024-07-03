@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+
+{% block title %}주문 내역{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1 class="mb-4">주문 내역</h1>
+
+    {% if orders %}
+    <table class="table table-hover">
+        <thead class="table-light">
+            <tr>
+                <th>주문 번호</th>
+                <th>주문 일시</th>
+                <th>상품</th>
+                <th>총 금액</th>
+                <th>상태</th>
+                <th>액션</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for order in orders %}
+            <tr>
+                <td>{{ order.id }}</td>
+                <td>{{ order.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                <td>
+                    {% for item in order.items[:2] %}
+                        {{ item.product.name }} ({{ item.quantity }}개){% if not loop.last %},{% endif %}
+                    {% endfor %}
+                    {% if order.items|length > 2 %}
+                        외 {{ order.items|length - 2 }}개
+                    {% endif %}
+                </td>
+                <td>{{ order.total_price | format_currency }}</td>
+                <td>
+                    <span class="badge {% if order.status == 'pending' %}bg-warning
+                                       {% elif order.status == 'paid' %}bg-success
+                                       {% elif order.status == 'shipped' %}bg-info
+                                       {% elif order.status == 'delivered' %}bg-primary
+                                       {% elif order.status == 'cancelled' %}bg-danger
+                                       {% else %}bg-secondary{% endif %}">
+                        {{ order.status | capitalize }}
+                    </span>
+                </td>
+                <td>
+                    <a href="{{ url_for('payment.order_status', order_id=order.id) }}" class="btn btn-sm btn-outline-primary">상세 보기</a>
+                    {% if order.status == 'pending' %}
+                    <button class="btn btn-sm btn-outline-danger cancel-order" data-order-id="{{ order.id }}">취소</button>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div class="alert alert-info" role="alert">
+        주문 내역이 없습니다.
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const cancelButtons = document.querySelectorAll('.cancel-order');
+    cancelButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const orderId = this.getAttribute('data-order-id');
+            if (confirm('정말로 이 주문을 취소하시겠습니까?')) {
+                fetch(`{{ url_for('payment.cancel_order', order_id=0) }}`.replace('0', orderId), {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': '{{ csrf_token() }}'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        alert('주문 취소 중 오류가 발생했습니다: ' + data.error);
+                    } else {
+                        alert('주문이 성공적으로 취소되었습니다.');
+                        location.reload();
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('주문 취소 중 오류가 발생했습니다.');
+                });
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

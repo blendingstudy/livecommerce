@@ -1,9 +1,11 @@
-from flask import app, flash, jsonify, redirect, url_for, render_template, request, abort
+from flask import app, current_app, flash, jsonify, redirect, url_for, render_template, request, abort
 from flask_login import current_user, login_required
 from app import db, socketio
 from app.models import LiveStream, Product, User
 from app.forms import LiveStreamForm
 from datetime import datetime
+
+from app.models.product import Category
 
 def list_streams(page=1, per_page=10):
     streams = LiveStream.query.filter_by(is_live=True).order_by(LiveStream.start_time.desc()).paginate(page=page, per_page=per_page, error_out=False)
@@ -12,14 +14,17 @@ def list_streams(page=1, per_page=10):
 from app.models import LiveStream, Product
 from app.forms import LiveStreamForm, ProductForm
 
-@login_required
+""" @login_required
 def create_stream():
     if not current_user.is_seller:
         flash('판매자만 라이브 스트림을 생성할 수 있습니다.', 'warning')
         return redirect(url_for('main.index'))
 
     form = LiveStreamForm()
+    # 기존 제품 선택지 설정
     form.existing_products.choices = [(p.id, p.name) for p in Product.query.filter_by(seller_id=current_user.id).all()]
+    # 카테고리 선택지 설정
+    form.category.choices = [(c.id, c.name) for c in Category.query.all()]
 
     if form.validate_on_submit():
         stream = LiveStream(
@@ -39,7 +44,47 @@ def create_stream():
         flash('라이브 스트림이 생성되었습니다.', 'success')
         return redirect(url_for('live_stream.stream_host', stream_id=stream.id))
     
-    return render_template('live_stream/create.html', form=form)
+    return render_template('live_stream/create.html', form=form) """
+
+@login_required
+def create_stream():
+    current_app.logger.info("Create stream function called")
+    if request.method == 'POST':
+        current_app.logger.info("POST request received")
+        current_app.logger.info(f"Form data: {request.form}")
+        
+    if not current_user.is_seller:
+        flash('판매자만 라이브 스트림을 생성할 수 있습니다.', 'warning')
+        return redirect(url_for('main.index'))
+
+    stream_form = LiveStreamForm()
+    product_form = ProductForm()
+
+    stream_form.existing_products.choices = [(p.id, p.name) for p in Product.query.filter_by(seller_id=current_user.id).all()]
+    product_form.category.choices = [(c.id, c.name) for c in Category.query.all()]
+
+    if stream_form.validate_on_submit():
+        stream = LiveStream(
+            title=stream_form.title.data,
+            description=stream_form.description.data,
+            seller_id=current_user.id
+        )
+        
+        for product_id in stream_form.existing_products.data:
+            product = Product.query.get(product_id)
+            if product:
+                stream.products.append(product)
+        
+        db.session.add(stream)
+        db.session.commit()
+        flash('라이브 스트림이 생성되었습니다.', 'success')
+        return redirect(url_for('live_stream.stream_host', stream_id=stream.id))
+    
+    # 폼 유효성 검사 실패 시 에러 출력
+    if stream_form.errors:
+        print(stream_form.errors)
+    
+    return render_template('live_stream/create.html', stream_form=stream_form, product_form=product_form)
 
 @login_required
 def host_stream(stream_id):
@@ -87,18 +132,31 @@ def get_stream_info(stream_id):
 
 @login_required
 def add_product():
-    data = request.json
-    new_product = Product(
-        name=data['name'],
-        price=data['price'],
-        description=data['description'],
-        seller_id=current_user.id
-    )
-    db.session.add(new_product)
-    db.session.commit()
-    return jsonify({
-        'id': new_product.id,
-        'name': new_product.name,
-        'price': new_product.price,
-        'description': new_product.description
-    })
+    form = ProductForm()
+    form.category.choices = [(c.id, c.name) for c in Category.query.all()]
+
+    if form.validate_on_submit():
+        product = Product(
+            name=form.name.data,
+            description=form.description.data,
+            price=form.price.data,
+            stock=form.stock.data,
+            category_id=form.category.data,
+            seller_id=current_user.id
+        )
+
+        if form.image.data:
+            # 이미지 처리 로직 (파일 저장 등)
+            pass
+
+        db.session.add(product)
+        db.session.commit()
+
+        return jsonify({
+            'id': product.id,
+            'name': product.name,
+            'price': float(product.price),
+            'description': product.description
+        })
+
+    return jsonify({'error': 'Invalid form data'}), 400

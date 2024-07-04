@@ -18,15 +18,33 @@ class IamportService:
         if now < self.expired_at:
             return self.access_token
 
-        url = f"{self.BASE_URL}/users/getToken"
+        """ url = f"{self.BASE_URL}/users/getToken"
         data = {
             'imp_key': self.imp_key,
             'imp_secret': self.imp_secret
         }
-        response = requests.post(url, data=data)
+        headers = {"Content-Type": "application/json"}
+        session = requests.Session()
+        response = session.post(url, data=data, headers=headers, timeout=30)
         response.raise_for_status()
         result = response.json()
 
+        self.access_token = result['response']['access_token']
+        self.expired_at = now + result['response']['expire_at']
+
+        return self.access_token """
+    
+        url = "https://api.iamport.kr/users/getToken"
+
+        payload = {
+            "imp_key": self.imp_key,
+            "imp_secret": self.imp_secret
+        }
+        headers = {"Content-Type": "application/json"}
+
+        response = requests.request("post", url, json=payload, headers=headers)
+        result = response.json()
+        
         self.access_token = result['response']['access_token']
         self.expired_at = now + result['response']['expire_at']
 

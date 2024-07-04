@@ -12,10 +12,10 @@ db = SQLAlchemy()
 login_manager = LoginManager()
 # SocketIO 객체 생성 (실시간 통신을 위해)
 socketio = SocketIO()
+csrf = CSRFProtect()
 
 def create_app(config_name='development'):
     app = Flask(__name__)
-    csrf = CSRFProtect(app)
     CORS(app, resources={r"/*": {"origins": "*"}})
 
     # 설정 로드
@@ -23,6 +23,8 @@ def create_app(config_name='development'):
         app.config.from_object('config.ProductionConfig')
     else:
         app.config.from_object('config.DevelopmentConfig')
+
+    csrf.init_app(app)
 
     # 데이터베이스 초기화
     db.init_app(app)

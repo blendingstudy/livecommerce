@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import DateTimeField, FieldList, FileField, FloatField, FormField, IntegerField, RadioField, SelectField, SelectMultipleField, StringField, PasswordField, BooleanField, SubmitField, TextAreaField, ValidationError
+from wtforms import DateTimeField, FieldList, FileField, FloatField, FormField, HiddenField, IntegerField, RadioField, SelectField, SelectMultipleField, StringField, PasswordField, BooleanField, SubmitField, TextAreaField, ValidationError
 from wtforms.validators import DataRequired, Email as EmailValidator, EqualTo, Length, NumberRange
 from flask_wtf.file import FileAllowed
 
@@ -60,3 +60,7 @@ class LiveStreamForm(FlaskForm):
 
     def __init__(self, *args, **kwargs):
         super(LiveStreamForm, self).__init__(*args, **kwargs)
+        
+class AddToCartForm(FlaskForm):
+    product_id = HiddenField('Product ID', validators=[DataRequired()])
+    quantity = IntegerField('Quantity', validators=[DataRequired(), NumberRange(min=1)])

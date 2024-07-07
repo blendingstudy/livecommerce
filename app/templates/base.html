@@ -32,7 +32,7 @@
                     <ul class="navbar-nav">
                         {% if current_user.is_authenticated %}
                             <li class="nav-item">
-                                <a class="nav-link">장바구니</a>
+                                <a class="nav-link" href="{{ url_for('cart.view_cart') }}">장바구니</a>
                             </li>
                             <li class="nav-item">
                                 <a class="nav-link">내 정보</a>

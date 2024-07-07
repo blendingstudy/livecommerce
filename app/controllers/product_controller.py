@@ -2,7 +2,7 @@ from flask import flash, redirect, url_for, render_template
 from flask_login import current_user, login_required
 from app import db
 from app.models import Product
-from app.forms import ProductForm
+from app.forms import AddToCartForm, ProductForm
 from app.models.product import Category
 
 def list_products(page=1, per_page=12, category=None):
@@ -15,7 +15,8 @@ def list_products(page=1, per_page=12, category=None):
 
 def get_product(product_id):
     product = Product.query.get_or_404(product_id)
-    return render_template('product/detail.html', product=product)
+    form = AddToCartForm(product_id=product_id)  # 장바구니 추가 폼 생성
+    return render_template('product/detail.html', product=product, form=form)
 
 @login_required
 def create_product():

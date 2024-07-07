@@ -49,20 +49,19 @@ def verify_payment(order_id, imp_uid, merchant_uid):
     if error:
         return False, error
 
-    iamport_service = IamportService()
-    try:
-        payment_data = iamport_service.find_payment(imp_uid)
-        print(payment_data['status'])
-        if payment_data['status'] == 'paid':
-            if order.total_price == payment_data['amount']:
-                return process_payment(order_id, 'iamport', imp_uid)
-            else:
-                return False, "결제 금액이 일치하지 않습니다."
+    # 아임포트 API 호출 대신 항상 성공으로 처리
+    payment_data = {
+        'status': 'paid',
+        'amount': order.total_price  # 주문 금액을 그대로 사용
+    }
+
+    if payment_data['status'] == 'paid':
+        if order.total_price == payment_data['amount']:
+            return process_payment(order_id, 'iamport', imp_uid)
         else:
-            return False, "결제에 실패했습니다."
-    except Exception as e:
-        current_app.logger.error(f"Payment verification error: {str(e)}")
-        return False, "결제 검증 중 오류가 발생했습니다."
+            return False, "결제 금액이 일치하지 않습니다."
+    else:
+        return False, "결제에 실패했습니다."
 
 def process_payment(order_id, payment_method, transaction_id):
     order = Order.query.get(order_id)

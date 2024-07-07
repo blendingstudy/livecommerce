@@ -91,7 +91,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 if (verificationResult.success) {
                     alert('결제가 성공적으로 완료되었습니다.');
-                    window.location.href = `/payment/order_status/${orderData.orderId}`;
+                    window.location.href = `/order_status/${orderData.orderId}`;
                 } else {
                     alert('결제 검증에 실패했습니다: ' + verificationResult.message);
                 }

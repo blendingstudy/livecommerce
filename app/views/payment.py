@@ -32,7 +32,7 @@ def checkout(order_id):
 @payment.route('/verify/<int:order_id>', methods=['POST'])
 @login_required
 def verify_payment(order_id):
-    print('hi')
+    """ print('hi')
     data = request.json
     current_app.logger.info(f"Received verification request for order {order_id}: {data}")
     print(f'Received verification request for order {order_id}: {data}')
@@ -60,11 +60,28 @@ def verify_payment(order_id):
             return jsonify({'success': False, 'message': '결제에 실패했습니다.'}), 400
     except Exception as e:
         current_app.logger.error(f"Payment verification error: {str(e)}")
+        return jsonify({'success': False, 'message': '결제 검증 중 오류가 발생했습니다.'}), 500 """
+    data = request.json
+    current_app.logger.info(f"Received verification request for order {order_id}: {data}")
+    imp_uid = data.get('imp_uid')
+    merchant_uid = data.get('merchant_uid')
+
+    try:
+        success, message = payment_controller.verify_payment(order_id, imp_uid, merchant_uid)
+        if success:
+            return jsonify({'success': True, 'message': '결제가 성공적으로 처리되었습니다.'}), 200
+        else:
+            return jsonify({'success': False, 'message': message}), 400
+    except Exception as e:
+        current_app.logger.error(f"Payment verification error: {str(e)}")
         return jsonify({'success': False, 'message': '결제 검증 중 오류가 발생했습니다.'}), 500
+    
+    
 
 @payment.route('/order_status/<int:order_id>')
 @login_required
 def order_status(order_id):
+    print('order status')
     order, error = payment_controller.get_order_status(order_id)
     
     if error:

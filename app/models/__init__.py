@@ -12,7 +12,7 @@ from .product import Product
 from .live_stream import LiveStream
 
 # Cart 모델 임포트
-#from .cart import Cart, CartItem
+from .cart import Cart, CartItem
 
 # Order 모델 임포트
 from .order import Order, OrderItem

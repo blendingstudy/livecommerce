@@ -15,6 +15,7 @@ class User(UserMixin, db.Model):
     #products = db.relationship('Product', backref='seller', lazy='dynamic')
     """orders = db.relationship('Order', backref='buyer', lazy='dynamic')
     cart_items = db.relationship('CartItem', backref='user', lazy='dynamic') """
+    cart = db.relationship('Cart', back_populates='user', uselist=False)
 
     def __init__(self, username, email, password, is_seller=False):
         self.username = username

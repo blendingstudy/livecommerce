@@ -1,3 +1,6 @@
+import socket
+import ssl
+import dns
 from flask import Flask, render_template
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
@@ -5,6 +8,7 @@ from flask_migrate import Migrate
 from flask_socketio import SocketIO
 from flask_cors import CORS
 from flask_wtf.csrf import CSRFProtect
+import requests
 
 # 데이터베이스 객체 생성
 db = SQLAlchemy()
@@ -41,12 +45,12 @@ def create_app(config_name='development'):
     from app import socket_events
 
     # 블루프린트 등록
-    from app.views import auth, product, live_stream, payment#, user, cart
+    from app.views import auth, product, live_stream, payment, cart #,user
     app.register_blueprint(auth.auth)
     #app.register_blueprint(user.bp)
     app.register_blueprint(product.product)
     app.register_blueprint(live_stream.live_stream)
-    #app.register_blueprint(cart.bp)
+    app.register_blueprint(cart.cart)
     app.register_blueprint(payment.payment)
 
     from app.models.user import User
@@ -70,5 +74,5 @@ def create_app(config_name='development'):
     @app.template_filter('format_currency')
     def format_currency(value):
         return f"₩{value:,.0f}"
-
+    
     return app

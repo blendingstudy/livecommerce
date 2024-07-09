@@ -17,6 +17,9 @@ class LiveStream(db.Model):
 
     # 라이브 스트림과 연관된 제품들
     products = db.relationship('Product', secondary='live_stream_products', backref=db.backref('live_streams', lazy='dynamic'))
+    reviews = db.relationship('Review', back_populates='live_stream', lazy='dynamic')
+    revenues = db.relationship('Revenue', back_populates='live_stream', lazy='dynamic')
+    favorited_by = db.relationship('User', secondary='user_favorite_streams', back_populates='favorite_streams')
 
     def __init__(self, title, seller_id, description=None, stream_url=None):
         self.title = title

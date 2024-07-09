@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+
+{% block title %}호스트 마이페이지 - {{ current_user.username }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="mb-4">호스트 마이페이지</h1>
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">프로필 정보</h5>
+                    <p><strong>사용자명:</strong> {{ current_user.username }}</p>
+                    <p><strong>이메일:</strong> {{ current_user.email }}</p>
+                    <p><strong>전화번호:</strong> {{ current_user.phone_number or '미등록' }}</p>
+                    <p><strong>주소:</strong> {{ current_user.address or '미등록' }}</p>
+                    <a href="{{ url_for('user.edit_profile', user_id=current_user.id) }}" class="btn btn-primary">프로필 수정</a>
+                </div>
+            </div>
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">수익 요약</h5>
+                    <p><strong>총 수익:</strong> {{ '${:,.2f}'.format(total_revenue) }}</p>
+                    <p><strong>이번 달 수익:</strong> {{ '${:,.2f}'.format(monthly_revenue) }}</p>
+                    <a href="{{ url_for('host.revenue') }}" class="btn btn-primary">자세한 수익 정보</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">라이브 스트림</h5>
+                    <h6>진행 중인 스트림</h6>
+                    <!-- {% if live_streams %}
+                        <ul class="list-group mb-3">
+                        {% for stream in live_streams %}
+                            <li class="list-group-item">
+                                {{ stream.title }}
+                                <span class="badge bg-success">Live</span>
+                                <small class="text-muted">시작: {{ stream.start_time.strftime('%Y-%m-%d %H:%M') }}</small>
+                            </li>
+                        {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p>현재 진행 중인 스트림이 없습니다.</p>
+                    {% endif %}
+                    <h6>예정된 스트림</h6>
+                    {% if upcoming_streams %}
+                        <ul class="list-group mb-3">
+                        {% for stream in upcoming_streams %}
+                            <li class="list-group-item">
+                                {{ stream.title }}
+                                <small class="text-muted">예정: {{ stream.start_time.strftime('%Y-%m-%d %H:%M') }}</small>
+                            </li>
+                        {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p>예정된 스트림이 없습니다.</p>
+                    {% endif %} -->
+                    <a href="{{ url_for('host.streams') }}" class="btn btn-primary">모든 스트림 관리</a>
+                    <a href="{{ url_for('host.create_stream') }}" class="btn btn-success">새 스트림 생성</a>
+                </div>
+            </div>
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">제품 관리</h5>
+                    {% if products %}
+                        <ul class="list-group mb-3">
+                        {% for product in products[:5] %}
+                            <li class="list-group-item">
+                                {{ product.name }} - {{ '${:,.2f}'.format(product.price) }}
+                                <span class="badge bg-secondary">재고: {{ product.stock }}</span>
+                            </li>
+                        {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p>등록된 제품이 없습니다.</p>
+                    {% endif %}
+                    <a href="{{ url_for('host.products') }}" class="btn btn-primary">모든 제품 관리</a>
+                    <a href="{{ url_for('host.create_product') }}" class="btn btn-success">새 제품 등록</a>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">최근 주문</h5>
+                    {% if recent_orders %}
+                        <ul class="list-group mb-3">
+                        {% for order in recent_orders %}
+                            <li class="list-group-item">
+                                주문 #{{ order.id }} - {{ '${:,.2f}'.format(order.total_price) }}
+                                <small class="text-muted">{{ order.created_at.strftime('%Y-%m-%d %H:%M') }}</small>
+                                <span class="badge bg-info">{{ order.status }}</span>
+                            </li>
+                        {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p>최근 주문이 없습니다.</p>
+                    {% endif %}
+                    <a href="{{ url_for('host.orders') }}" class="btn btn-primary">모든 주문 관리</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

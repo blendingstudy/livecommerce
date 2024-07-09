@@ -64,3 +64,12 @@ class LiveStreamForm(FlaskForm):
 class AddToCartForm(FlaskForm):
     product_id = HiddenField('Product ID', validators=[DataRequired()])
     quantity = IntegerField('Quantity', validators=[DataRequired(), NumberRange(min=1)])
+    
+class UserProfileForm(FlaskForm):
+    username = StringField('사용자명', validators=[DataRequired(), Length(min=2, max=20)])
+    email = StringField('이메일', validators=[DataRequired(), EmailValidator()])
+    phone_number = StringField('전화번호')
+    address = StringField('주소')
+    password = PasswordField('새 비밀번호', validators=[EqualTo('confirm_password', message='비밀번호가 일치하지 않습니다')])
+    confirm_password = PasswordField('새 비밀번호 확인')
+    submit = SubmitField('프로필 업데이트')

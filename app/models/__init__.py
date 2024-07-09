@@ -17,6 +17,9 @@ from .cart import Cart, CartItem
 # Order 모델 임포트
 from .order import Order, OrderItem
 
+from .review import Review
+from .revenue import Revenue
+
 # Payment 모델 임포트
 #from .payment import Payment
 

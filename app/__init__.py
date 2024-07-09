@@ -45,18 +45,22 @@ def create_app(config_name='development'):
     from app import socket_events
 
     # 블루프린트 등록
-    from app.views import auth, product, live_stream, payment, cart #,user
+    from app.views import auth, product, live_stream, payment, cart, user, host
     app.register_blueprint(auth.auth)
-    #app.register_blueprint(user.bp)
+    app.register_blueprint(user.user)
     app.register_blueprint(product.product)
     app.register_blueprint(live_stream.live_stream)
     app.register_blueprint(cart.cart)
     app.register_blueprint(payment.payment)
+    app.register_blueprint(host.host)
 
     from app.models.user import User
     from app.models.product import Product
     from app.models.live_stream import LiveStream
     from app.models.order import Order, OrderItem
+    from app.models.cart import Cart, CartItem
+    from app.models.review import Review
+    from app.models.revenue import Revenue
 
     # 사용자 로더 콜백 설정
     @login_manager.user_loader

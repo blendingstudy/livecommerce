@@ -1,11 +1,12 @@
 # app/controllers/__init__.py
 
 from .auth_controller import register, login_user, logout_user
-#from .user_controller import get_user_profile, update_user_profile
+from .user_controller import get_user_profile, update_user_profile
 from .product_controller import create_product, get_product, edit_product, delete_product
 from .live_stream_controller import create_stream, host_stream, end_stream
 from .cart_controller import add_to_cart, remove_from_cart
 from .payment_controller import create_order, process_payment
+from .host_controller import get_host_orders, get_host_products, get_host_profile, get_host_revenue, get_host_streams
 
 # 필요한 경우 추가 컨트롤러 함수를 여기에 임포트합니다.
 

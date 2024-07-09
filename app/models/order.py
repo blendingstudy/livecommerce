@@ -10,7 +10,7 @@ class Order(db.Model):
     updated_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     # 관계
-    user = db.relationship('User', backref=db.backref('orders', lazy=True))
+    user = db.relationship('User', backref=db.backref('orders', lazy='dynamic'))
     items = db.relationship('OrderItem', backref='order', lazy=True, cascade="all, delete-orphan")
     payment = db.relationship('Payment', backref='order', lazy=True, uselist=False)
 

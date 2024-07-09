@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block title %}내 리뷰{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="mb-4">내가 작성한 리뷰</h1>
+    
+    {% if reviews %}
+        <div class="row">
+        {% for review in reviews %}
+            <div class="col-md-6 mb-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ review.live_stream.title }}</h5>
+                        <h6 class="card-subtitle mb-2 text-muted">
+                            평점: {% for _ in range(review.rating) %}★{% endfor %}{% for _ in range(5 - review.rating) %}☆{% endfor %}
+                        </h6>
+                        <p class="card-text">{{ review.content }}</p>
+                        <p class="card-text"><small class="text-muted">작성일: {{ review.created_at.strftime('%Y-%m-%d %H:%M') }}</small></p>
+                        <a href="{{ url_for('live_stream.watch_stream', stream_id=review.live_stream.id) }}" class="card-link">스트림 보기</a>
+                        <a href="{{ url_for('user.edit_review', review_id=review.id) }}" class="card-link">리뷰 수정</a>
+                        <form action="{{ url_for('user.delete_review', review_id=review.id) }}" method="POST" style="display: inline;">
+                            <button type="submit" class="btn btn-link text-danger" onclick="return confirm('정말로 이 리뷰를 삭제하시겠습니까?');">리뷰 삭제</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+        </div>
+    {% else %}
+        <p>작성한 리뷰가 없습니다.</p>
+    {% endif %}
+    
+    <a href="{{ url_for('user.mypage') }}" class="btn btn-secondary">마이페이지로 돌아가기</a>
+</div>
+{% endblock %}

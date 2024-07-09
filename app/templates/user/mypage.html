@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+
+{% block title %}마이페이지 - {{ current_user.username }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="mb-4">마이페이지</h1>
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">프로필 정보</h5>
+                    <p><strong>사용자명:</strong> {{ current_user.username }}</p>
+                    <p><strong>이메일:</strong> {{ current_user.email }}</p>
+                    <p><strong>전화번호:</strong> {{ current_user.phone_number or '미등록' }}</p>
+                    <p><strong>주소:</strong> {{ current_user.address or '미등록' }}</p>
+                    <a href="{{ url_for('user.edit_profile', user_id=current_user.id) }}" class="btn btn-primary">프로필 수정</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">최근 구매 내역</h5>
+                    {% if current_user.orders %}
+                        <ul class="list-group">
+                        {% for order in current_user.orders[:5] %}
+                            <li class="list-group-item">
+                                주문 번호: {{ order.id }} - 총액: {{ order.total_price }}원
+                                <small class="text-muted">{{ order.created_at.strftime('%Y-%m-%d %H:%M') }}</small>
+                            </li>
+                        {% endfor %}
+                        </ul>
+                        <a href="{{ url_for('payment.order_history') }}" class="btn btn-link mt-2">전체 구매 내역 보기</a>
+                    {% else %}
+                        <p>아직 구매 내역이 없습니다.</p>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">최근 리뷰</h5>
+                    {% if current_user.reviews %}
+                        <ul class="list-group">
+                        {% for review in current_user.reviews[:5] %}
+                            <li class="list-group-item">
+                                {{ review.live_stream.title }} - 평점: {{ review.rating }}/5
+                                <small class="text-muted">{{ review.created_at.strftime('%Y-%m-%d %H:%M') }}</small>
+                            </li>
+                        {% endfor %}
+                        </ul>
+                        <a href="{{ url_for('user.reviews') }}" class="btn btn-link mt-2">전체 리뷰 보기</a>
+                    {% else %}
+                        <p>아직 작성한 리뷰가 없습니다.</p>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">관심 목록</h5>
+                    <h6>관심 있는 라이브 스트림</h6>
+                    {% if current_user.favorite_streams %}
+                        <ul class="list-group mb-3">
+                        {% for stream in current_user.favorite_streams[:3] %}
+                            <li class="list-group-item">
+                                {{ stream.title }}
+                                <small class="text-muted">{{ stream.scheduled_start_time.strftime('%Y-%m-%d %H:%M') }}</small>
+                            </li>
+                        {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p>관심 있는 라이브 스트림이 없습니다.</p>
+                    {% endif %}
+                    <h6>관심 있는 상품</h6>
+                    {% if current_user.favorite_products %}
+                        <ul class="list-group">
+                        {% for product in current_user.favorite_products[:3] %}
+                            <li class="list-group-item">
+                                {{ product.name }} - {{ product.price }}원
+                            </li>
+                        {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p>관심 있는 상품이 없습니다.</p>
+                    {% endif %}
+                    <a href="{{ url_for('user.favorites') }}" class="btn btn-link mt-2">전체 관심 목록 보기</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

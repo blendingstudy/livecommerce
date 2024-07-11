@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+
+{% block title %}주문 관리{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="mb-4">주문 관리</h1>
+
+    <div class="mb-4">
+        <form class="row g-3" method="GET">
+            <div class="col-auto">
+                <select name="status" class="form-select" onchange="this.form.submit()">
+                    <option value="all" {% if status == 'all' %}selected{% endif %}>모든 상태</option>
+                    <option value="pending" {% if status == 'pending' %}selected{% endif %}>대기 중</option>
+                    <option value="paid" {% if status == 'paid' %}selected{% endif %}>결제 완료</option>
+                    <option value="shipped" {% if status == 'shipped' %}selected{% endif %}>배송 중</option>
+                    <option value="delivered" {% if status == 'delivered' %}selected{% endif %}>배송 완료</option>
+                    <option value="cancelled" {% if status == 'cancelled' %}selected{% endif %}>취소됨</option>
+                </select>
+            </div>
+        </form>
+    </div>
+
+    {% if orders %}
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>주문 번호</th>
+                    <th>구매자</th>
+                    <th>상품</th>
+                    <th>총 금액</th>
+                    <th>주문 일시</th>
+                    <th>상태</th>
+                    <th>액션</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for order in orders %}
+                    <tr>
+                        <td>{{ order.id }}</td>
+                        <td>{{ order.user.username }}</td>
+                        <td>
+                            <ul>
+                            {% for item in order.items %}
+                                {% if item.product.seller_id == current_user.id %}
+                                    <li>{{ item.product.name }} ({{ item.quantity }}개)</li>
+                                {% endif %}
+                            {% endfor %}
+                            </ul>
+                        </td>
+                        <td>{{ '${:,.2f}'.format(order.total_price) }}</td>
+                        <td>{{ order.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                        <td>
+                            <span class="badge bg-{{ order.status | status_color }}">
+                                {{ order.status | status_display }}
+                            </span>
+                        </td>
+                        <td>
+                            {% if order.status == 'paid' %}
+                                <button class="btn btn-sm btn-primary" onclick="updateOrderStatus({{ order.id }}, 'shipped')">배송 시작</button>
+                            {% elif order.status == 'shipped' %}
+                                <button class="btn btn-sm btn-success" onclick="updateOrderStatus({{ order.id }}, 'delivered')">배송 완료</button>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        {% if orders.pages > 1 %}
+        <nav aria-label="Page navigation">
+            <ul class="pagination justify-content-center">
+                {% for page in orders.iter_pages() %}
+                    {% if page %}
+                        {% if page != orders.page %}
+                            <li class="page-item"><a class="page-link" href="{{ url_for('host.orders', page=page, status=status) }}">{{ page }}</a></li>
+                        {% else %}
+                            <li class="page-item active"><span class="page-link">{{ page }}</span></li>
+                        {% endif %}
+                    {% else %}
+                        <li class="page-item disabled"><span class="page-link">...</span></li>
+                    {% endif %}
+                {% endfor %}
+            </ul>
+        </nav>
+        {% endif %}
+    {% else %}
+        <p>주문이 없습니다.</p>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+function updateOrderStatus(orderId, newStatus) {
+    if (confirm('주문 상태를 변경하시겠습니까?')) {
+        fetch(`/host/orders/${orderId}/update_status`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify({status: newStatus})
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('주문 상태가 성공적으로 업데이트되었습니다.');
+                location.reload();
+            } else {
+                alert('주문 상태 업데이트 중 오류가 발생했습니다: ' + data.error);
+            }
+        })
+        .catch((error) => {
+            console.error('Error:', error);
+            alert('주문 상태 업데이트 중 오류가 발생했습니다.');
+        });
+    }
+}
+</script>
+{% endblock %}

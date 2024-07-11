@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+
+{% block title %}호스트 대시보드{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="mb-4">호스트 대시보드</h1>
+
+    <div class="row">
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">라이브 스트림 요약</h5>
+                </div>
+                <div class="card-body">
+                    <p>총 스트림 수: {{ streams|length }}</p>
+                    <p>진행 중인 스트림: {{ streams['live']|length }}</p>
+                    <p>예정된 스트림: {{ streams['upcoming']|length }}</p>
+                    <p>지난 스트림: {{ streams['past']|length }}</p>
+                    <a href="{{ url_for('host.streams') }}" class="btn btn-primary">스트림 관리</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">제품 요약</h5>
+                </div>
+                <div class="card-body">
+                    <p>총 제품 수: {{ products.count() }}</p>
+                    <a href="{{ url_for('host.products') }}" class="btn btn-primary">제품 관리</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">수익 요약</h5>
+                </div>
+                <div class="card-body">
+                    <p>총 수익: {{ '${:,.2f}'.format(revenue['total']) }}</p>
+                    <p>이번 달 수익: {{ '${:,.2f}'.format(revenue['monthly']) }}</p>
+                    <a href="{{ url_for('host.revenue') }}" class="btn btn-primary">자세한 수익 정보</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">최근 주문</h5>
+                </div>
+                <div class="card-body">
+                    {% if recent_orders %}
+                        <ul class="list-group">
+                        {% for order in recent_orders %}
+                            <li class="list-group-item">
+                                주문 #{{ order.id }} - {{ '${:,.2f}'.format(order.total_price) }}
+                                <span class="badge bg-secondary">{{ order.status }}</span>
+                            </li>
+                        {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p>최근 주문이 없습니다.</p>
+                    {% endif %}
+                    <a href="{{ url_for('host.orders') }}" class="btn btn-primary mt-3">모든 주문 보기</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if streams['live'] %}
+    <div class="row mt-4">
+        <div class="col-12">
+            <h2>현재 진행 중인 스트림</h2>
+            <div class="list-group">
+            {% for stream in streams['live'] %}
+                <a href="{{ url_for('live_stream.stream_dashboard', stream_id=stream.id) }}" class="list-group-item list-group-item-action">
+                    <div class="d-flex w-100 justify-content-between">
+                        <h5 class="mb-1">{{ stream.title }}</h5>
+                        <small>시작: {{ stream.start_time.strftime('%Y-%m-%d %H:%M') }}</small>
+                    </div>
+                    <p class="mb-1">시청자 수: {{ stream.viewer_count }}</p>
+                </a>
+            {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

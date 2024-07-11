@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block title %}스트림 통계 - {{ stats.stream_title }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="mb-4">스트림 통계: {{ stats.stream_title }}</h1>
+
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="card-title mb-0">기본 정보</h5>
+        </div>
+        <div class="card-body">
+            <p><strong>시작 시간:</strong> {{ stats.start_time.strftime('%Y-%m-%d %H:%M') }}</p>
+            <p><strong>종료 시간:</strong> {{ stats.end_time.strftime('%Y-%m-%d %H:%M') if stats.end_time else '진행 중' }}</p>
+            <p><strong>총 시청자 수:</strong> {{ stats.total_viewers }}</p>
+            <p><strong>최대 동시 시청자 수:</strong> {{ stats.max_concurrent_viewers }}</p>
+            <p><strong>스트림 지속 시간:</strong> {{ '{:.2f}'.format(stats.duration) }} 분</p>
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="card-title mb-0">매출 정보</h5>
+        </div>
+        <div class="card-body">
+            <p><strong>총 매출액:</strong> {{ '${:,.2f}'.format(stats.total_revenue) }}</p>
+            <h6>판매된 상품:</h6>
+            <ul class="list-group">
+                {% for product in stats.sold_products %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        {{ product.name }}
+                        <span>
+                            {{ product.quantity }}개 판매
+                            <span class="badge bg-primary rounded-pill">{{ '${:,.2f}'.format(product.sales) }}</span>
+                        </span>
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}

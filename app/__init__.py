@@ -79,4 +79,27 @@ def create_app(config_name='development'):
     def format_currency(value):
         return f"₩{value:,.0f}"
     
+    # 템플릿 필터 정의
+    @app.template_filter('status_color')
+    def status_color(status):
+        colors = {
+            'pending': 'warning',
+            'paid': 'info',
+            'shipped': 'primary',
+            'delivered': 'success',
+            'cancelled': 'danger'
+        }
+        return colors.get(status, 'secondary')
+
+    @app.template_filter('status_display')
+    def status_display(status):
+        displays = {
+            'pending': '대기 중',
+            'paid': '결제 완료',
+            'shipped': '배송 중',
+            'delivered': '배송 완료',
+            'cancelled': '취소됨'
+        }
+        return displays.get(status, status)
+    
     return app

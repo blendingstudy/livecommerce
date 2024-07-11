@@ -44,7 +44,10 @@ def edit_profile(user_id):
         success, message = user_controller.update_user_profile(user_id, data)
         if success:
             flash(message, 'success')
-            return redirect(url_for('user.mypage', user_id=user_id))
+            if current_user.is_seller:
+                return redirect(url_for('host.mypage', user_id=user_id))
+            else:
+                return redirect(url_for('user.mypage', user_id=user_id))
         else:
             flash(message, 'error')
     

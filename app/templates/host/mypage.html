@@ -17,6 +17,14 @@
                     <a href="{{ url_for('user.edit_profile', user_id=current_user.id) }}" class="btn btn-primary">프로필 수정</a>
                 </div>
             </div>
+            <!-- 대시보드 링크 카드 추가 -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">대시보드</h5>
+                    <p>전체적인 호스트 활동 요약 및 성과를 확인하세요.</p>
+                    <a href="{{ url_for('host.dashboard') }}" class="btn btn-primary">대시보드 보기</a>
+                </div>
+            </div>
             <div class="card mb-4">
                 <div class="card-body">
                     <h5 class="card-title">수익 요약</h5>
@@ -58,7 +66,7 @@
                         <p>예정된 스트림이 없습니다.</p>
                     {% endif %} -->
                     <a href="{{ url_for('host.streams') }}" class="btn btn-primary">모든 스트림 관리</a>
-                    <a href="{{ url_for('host.create_stream') }}" class="btn btn-success">새 스트림 생성</a>
+                    <a href="{{ url_for('live_stream.stream_create') }}" class="btn btn-success">새 스트림 생성</a>
                 </div>
             </div>
             <div class="card mb-4">
@@ -77,7 +85,7 @@
                         <p>등록된 제품이 없습니다.</p>
                     {% endif %}
                     <a href="{{ url_for('host.products') }}" class="btn btn-primary">모든 제품 관리</a>
-                    <a href="{{ url_for('host.create_product') }}" class="btn btn-success">새 제품 등록</a>
+                    <a href="{{ url_for('product.product_create') }}" class="btn btn-success">새 제품 등록</a>
                 </div>
             </div>
             <div class="card">

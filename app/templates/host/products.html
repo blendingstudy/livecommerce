@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+
+{% block title %}내 제품 목록{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="mb-4">내 제품 목록</h1>
+
+    <div class="mb-4">
+        <a href="{{ url_for('product.product_create') }}" class="btn btn-primary">새 제품 등록</a>
+    </div>
+
+    <!-- 카테고리 필터 추가 -->
+    <!-- <div class="mb-4">
+        <h5>카테고리</h5>
+        <div class="btn-group" role="group" aria-label="카테고리 필터">
+            <a href="{{ url_for('host.products') }}" class="btn btn-outline-primary {% if not selected_category %}active{% endif %}">전체</a>
+            {% for category in categories %}
+            <a href="{{ url_for('host.products', category=category.name) }}" class="btn btn-outline-primary {% if selected_category == category.name %}active{% endif %}">{{ category.name }}</a>
+            {% endfor %}
+        </div>
+    </div> -->
+
+    <div class="row row-cols-1 row-cols-md-3 row-cols-lg-4 g-4">
+        {% for product in products.items %}
+        <div class="col">
+            <div class="card h-100">
+                {% if product.image_url %}
+                <img src="{{ product.image_url }}" class="card-img-top" alt="{{ product.name }}">
+                {% else %}
+                <img src="{{ url_for('static', filename='images/default_product.jpg') }}" class="card-img-top" alt="Default product image">
+                {% endif %}
+                <div class="card-body">
+                    <h5 class="card-title">{{ product.name }}</h5>
+                    <p class="card-text">{{ product.description[:100] }}{% if product.description|length > 100 %}...{% endif %}</p>
+                    <p class="card-text"><strong>가격:</strong> {{ product.price | round(2) }}원</p>
+                    <p class="card-text"><strong>재고:</strong> {{ product.stock }}개</p>
+                    <p class="card-text"><strong>카테고리:</strong> {{ product.category.name }}</p>
+                </div>
+                <div class="card-footer">
+                    <a href="{{ url_for('product.product_detail', product_id=product.id) }}" class="btn btn-primary btn-sm">상세 보기</a>
+                    <a href="{{ url_for('product.product_edit', product_id=product.id) }}" class="btn btn-secondary btn-sm">수정</a>
+                    <button class="btn btn-danger btn-sm" onclick="deleteProduct({{ product.id }})">삭제</button>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    {% if products.pages > 1 %}
+    <nav aria-label="Page navigation" class="mt-4">
+        <ul class="pagination justify-content-center">
+            {% for page in products.iter_pages() %}
+                {% if page %}
+                    {% if page != products.page %}
+                    <li class="page-item"><a class="page-link" href="{{ url_for('host.products', page=page, category=selected_category) }}">{{ page }}</a></li>
+                    {% else %}
+                    <li class="page-item active" aria-current="page"><span class="page-link">{{ page }}</span></li>
+                    {% endif %}
+                {% else %}
+                    <li class="page-item disabled"><span class="page-link">...</span></li>
+                {% endif %}
+            {% endfor %}
+        </ul>
+    </nav>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+function deleteProduct(productId) {
+    if (confirm('정말로 이 제품을 삭제하시겠습니까?')) {
+        fetch(`/product/${productId}/delete`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token() }}'
+            },
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert(data.message);
+                location.reload();
+            } else {
+                alert('제품 삭제 중 오류가 발생했습니다: ' + data.error);
+            }
+        })
+        .catch((error) => {
+            console.error('Error:', error);
+            alert('제품 삭제 중 오류가 발생했습니다.');
+        });
+    }
+}
+</script>
+{% endblock %}

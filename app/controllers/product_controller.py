@@ -1,4 +1,4 @@
-from flask import flash, redirect, url_for, render_template
+from flask import flash, jsonify, redirect, request, url_for, render_template
 from flask_login import current_user, login_required
 from app import db
 from app.models import Product
@@ -80,13 +80,24 @@ def edit_product(product_id):
 def delete_product(product_id):
     product = Product.query.get_or_404(product_id)
     if product.seller_id != current_user.id:
+        if request.is_json:
+            return jsonify({'success': False, 'error': '자신의 제품만 삭제할 수 있습니다.'}), 403
         flash('자신의 제품만 삭제할 수 있습니다.', 'warning')
-        return redirect(url_for('product.product_detail', product_id=product.id))
+        return redirect(url_for('product.product_detail', product_id=product_id))
 
-    db.session.delete(product)
-    db.session.commit()
-    flash('제품이 성공적으로 삭제되었습니다.', 'success')
-    return redirect(url_for('product.list_products'))
+    try:
+        db.session.delete(product)
+        db.session.commit()
+        if request.is_json:
+            return jsonify({'success': True, 'message': '제품이 성공적으로 삭제되었습니다.'}), 200
+        flash('제품이 성공적으로 삭제되었습니다.', 'success')
+        return redirect(url_for('product.products_list'))
+    except Exception as e:
+        db.session.rollback()
+        if request.is_json:
+            return jsonify({'success': False, 'error': str(e)}), 500
+        flash(f'제품 삭제 중 오류가 발생했습니다: {str(e)}', 'danger')
+        return redirect(url_for('product.product_detail', product_id=product_id))
 
 def search_products(query, page=1, per_page=12):
     products = Product.query.filter(Product.name.ilike(f'%{query}%')).paginate(page=page, per_page=per_page, error_out=False)

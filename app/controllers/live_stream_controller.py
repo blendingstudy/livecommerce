@@ -106,6 +106,7 @@ def end_stream(stream_id):
     if stream.seller_id != current_user.id:
         abort(403)
     stream.end_stream()
+    print('end')
     db.session.commit()
     flash('라이브 스트림이 종료되었습니다.', 'success')
     return redirect(url_for('live_stream.list_streams'))

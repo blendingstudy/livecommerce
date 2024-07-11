@@ -51,7 +51,11 @@
         </div>
         <div class="mb-3">
             {{ form.submit(class="btn btn-primary") }}
-            <a href="{{ url_for('user.mypage', user_id=current_user.id) }}" class="btn btn-secondary">취소</a>
+            {% if current_user.is_authenticated and current_user.is_seller %}
+                <a href="{{ url_for('host.mypage', user_id=current_user.id) }}" class="btn btn-secondary">취소</a>
+            {% else %}
+                <a href="{{ url_for('user.mypage', user_id=current_user.id) }}" class="btn btn-secondary">취소</a>
+            {% endif %}
         </div>
     </form>
 </div>

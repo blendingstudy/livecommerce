@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+
+{% block title %}수익 관리{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="mb-4">수익 관리</h1>
+
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">총 수익</h5>
+                    <h2 class="card-text">{{ '${:,.2f}'.format(revenue_data['total']) }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">기간 선택</h5>
+                    <form method="GET" action="{{ url_for('host.revenue') }}">
+                        <select name="period" class="form-select" onchange="this.form.submit()">
+                            <option value="all" {% if period == 'all' %}selected{% endif %}>전체 기간</option>
+                            <option value="daily" {% if period == 'daily' %}selected{% endif %}>오늘</option>
+                            <option value="weekly" {% if period == 'weekly' %}selected{% endif %}>이번 주</option>
+                            <option value="monthly" {% if period == 'monthly' %}selected{% endif %}>이번 달</option>
+                        </select>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <h5 class="card-title">수익 상세 내역</h5>
+            {% if revenue_data['list'] %}
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>날짜</th>
+                            <th>스트림</th>
+                            <th>총 수익</th>
+                            <th>수수료</th>
+                            <th>순수익</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for revenue in revenue_data['list'] %}
+                            <tr>
+                                <td>{{ revenue.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                                <td>
+                                    {% if revenue.live_stream %}
+                                        <a href="{{ url_for('host.stream_stats', stream_id=revenue.live_stream.id) }}">{{ revenue.live_stream.title }}</a>
+                                    {% else %}
+                                        N/A
+                                    {% endif %}
+                                </td>
+                                <td>{{ '${:,.2f}'.format(revenue.amount) }}</td>
+                                <td>{{ '${:,.2f}'.format(revenue.amount - revenue.net_amount) }}</td>
+                                <td>{{ '${:,.2f}'.format(revenue.net_amount) }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <p>선택한 기간에 수익 내역이 없습니다.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // 여기에 수익 데이터를 시각화하는 차트 코드를 추가할 수 있습니다.
+    // 예: 날짜별 수익 추이를 보여주는 선 그래프
+</script>
+{% endblock %}

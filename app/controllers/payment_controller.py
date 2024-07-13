@@ -15,11 +15,13 @@ def create_order(products):
 
     for item in products:
         product = Product.query.get(item['id'])
+        print(product)
         if not product:
             return None, f"상품 ID {item['id']}를 찾을 수 없습니다."
         if product.stock < item['quantity']:
             return None, f"상품 {product.name}의 재고가 부족합니다."
         
+        product.order_count += item.quantity
         price = product.price * item['quantity']
         total_price += price
         order_items.append(OrderItem(product_id=product.id, quantity=item['quantity'], price=price))

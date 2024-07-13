@@ -39,7 +39,7 @@
                                        {% elif order.status == 'delivered' %}bg-primary
                                        {% elif order.status == 'cancelled' %}bg-danger
                                        {% else %}bg-secondary{% endif %}">
-                        {{ order.status | capitalize }}
+                        {{ order.status | status_display }}
                     </span>
                 </td>
                 <td>
@@ -58,40 +58,4 @@
     </div>
     {% endif %}
 </div>
-{% endblock %}
-
-{% block scripts %}
-{{ super() }}
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const cancelButtons = document.querySelectorAll('.cancel-order');
-    cancelButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            const orderId = this.getAttribute('data-order-id');
-            if (confirm('정말로 이 주문을 취소하시겠습니까?')) {
-                fetch(`{{ url_for('payment.cancel_order', order_id=0) }}`.replace('0', orderId), {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRFToken': '{{ csrf_token() }}'
-                    }
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.error) {
-                        alert('주문 취소 중 오류가 발생했습니다: ' + data.error);
-                    } else {
-                        alert('주문이 성공적으로 취소되었습니다.');
-                        location.reload();
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('주문 취소 중 오류가 발생했습니다.');
-                });
-            }
-        });
-    });
-});
-</script>
 {% endblock %}

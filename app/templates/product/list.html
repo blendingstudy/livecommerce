@@ -28,9 +28,9 @@
         <div class="col">
             <div class="card h-100">
                 {% if product.image_url %}
-                <img src="{{ product.image_url }}" class="card-img-top" alt="{{ product.name }}">
+                    <img src="{{ url_for('static', filename='product_images/' + product.image_url) }}" class="img-fluid rounded" alt="{{ product.name }}">
                 {% else %}
-                <img src="{{ url_for('static', filename='images/default_product.jpg') }}" class="card-img-top" alt="Default product image">
+                    <img src="{{ url_for('static', filename='images/default_product.jpg') }}" class="card-img-top" alt="Default product image">
                 {% endif %}
                 <div class="card-body">
                     <h5 class="card-title">{{ product.name }}</h5>

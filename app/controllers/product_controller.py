@@ -1,9 +1,11 @@
-from flask import flash, jsonify, redirect, request, url_for, render_template
+import os
+from flask import current_app, flash, jsonify, redirect, request, url_for, render_template
 from flask_login import current_user, login_required
 from app import db
 from app.models import Product
 from app.forms import AddToCartForm, ProductForm
 from app.models.product import Category
+from werkzeug.utils import secure_filename
 
 def list_products(page=1, per_page=12, category=None):
     query = Product.query
@@ -16,8 +18,10 @@ def list_products(page=1, per_page=12, category=None):
 def get_product(product_id):
     product = Product.query.get_or_404(product_id)
     form = AddToCartForm(product_id=product_id)  # 장바구니 추가 폼 생성
+    product.view_count += 1
+    db.session.commit()
     return render_template('product/detail.html', product=product, form=form)
-
+    
 @login_required
 def create_product():
     if not current_user.is_seller:
@@ -31,8 +35,27 @@ def create_product():
             description=form.description.data,
             price=form.price.data,
             stock=form.stock.data,
-            seller_id=current_user.id
+            seller_id=current_user.id,
+            category_id=form.category.data
         )
+
+        # 이미지 파일 처리
+        if form.image.data:
+            image_file = form.image.data
+            filename = secure_filename(image_file.filename)
+            file_path = os.path.join(current_app.root_path, 'static/product_images', filename)
+            
+            # 동일한 파일명이 존재할 경우 고유한 파일명 생성
+            base, extension = os.path.splitext(filename)
+            counter = 1
+            while os.path.exists(file_path):
+                filename = f"{base}_{counter}{extension}"
+                file_path = os.path.join(current_app.root_path, 'static/product_images', filename)
+                counter += 1
+
+            image_file.save(file_path)
+            product.image_url = filename
+
         db.session.add(product)
         db.session.commit()
         flash('제품이 성공적으로 등록되었습니다.', 'success')

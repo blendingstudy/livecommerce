@@ -71,10 +71,9 @@ def create_app(config_name='development'):
     def index():
         products = Product.query.limit(8).all()
         print(products)
-        #popular_products = Product.query.order_by(Product.sales_count.desc()).limit(4).all()
-        #return render_template('index.html'""" , products=products, popular_products=popular_products """)
-        return render_template('index.html', products=products)
-
+        popular_products = Product.query.order_by(Product.popularity_score.desc()).limit(3).all()
+        return render_template('index.html', products=products, popular_products=popular_products)
+    
     @app.template_filter('format_currency')
     def format_currency(value):
         return f"₩{value:,.0f}"

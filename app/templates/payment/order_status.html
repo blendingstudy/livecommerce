@@ -18,7 +18,7 @@
                                    {% elif order.status == 'delivered' %}bg-primary
                                    {% elif order.status == 'cancelled' %}bg-danger
                                    {% else %}bg-secondary{% endif %}">
-                    {{ order.status | capitalize }}
+                    {{ order.status | status_display }}
                 </span>
             </h5>
             <p class="card-text">주문 일시: {{ order.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</p>
@@ -80,36 +80,4 @@
     </div>
     {% endif %}
 </div>
-{% endblock %}
-
-{% block scripts %}
-{{ super() }}
-<script>
-    {% if order.status == 'pending' %}
-    document.getElementById('cancelOrderBtn').addEventListener('click', function() {
-        if (confirm('정말로 이 주문을 취소하시겠습니까?')) {
-            fetch('{{ url_for("payment.cancel_order", order_id=order.id) }}', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': '{{ csrf_token() }}'
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.error) {
-                    alert('주문 취소 중 오류가 발생했습니다: ' + data.error);
-                } else {
-                    alert('주문이 성공적으로 취소되었습니다.');
-                    location.reload();
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('주문 취소 중 오류가 발생했습니다.');
-            });
-        }
-    });
-    {% endif %}
-</script>
 {% endblock %}

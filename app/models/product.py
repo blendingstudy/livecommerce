@@ -1,5 +1,6 @@
 from app import db
 from datetime import datetime
+from sqlalchemy.ext.hybrid import hybrid_property
 
 class Product(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -10,6 +11,8 @@ class Product(db.Model):
     image_url = db.Column(db.String(200), nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    view_count = db.Column(db.Integer, default=0)
+    order_count = db.Column(db.Integer, default=0)
     
     # 판매자와의 관계 설정
     seller_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
@@ -28,6 +31,8 @@ class Product(db.Model):
         self.seller_id = seller_id
         self.image_url = image_url
         self.category_id = category_id
+        self.view_count = 0
+        self.order_count = 0
 
     def __repr__(self):
         return f'<Product {self.name}>'
@@ -45,6 +50,10 @@ class Product(db.Model):
             'created_at': self.created_at,
             'updated_at': self.updated_at
         }
+        
+    @hybrid_property
+    def popularity_score(self):
+        return self.view_count + (self.order_count * 10)  # 주문 수에 더 높은 가중치 부여
 
 class Category(db.Model):
     id = db.Column(db.Integer, primary_key=True)

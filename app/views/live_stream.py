@@ -7,7 +7,8 @@ from app.controllers.live_stream_controller import (
     host_stream,
     watch_stream,
     end_stream,
-    get_stream_info
+    get_stream_info,
+    leave_stream
 )
 from app.models.live_stream import LiveStream
 
@@ -69,3 +70,19 @@ def search_streams():
 def stream_add_product():
     return add_product()
 
+@live_stream.route('/leave_stream', methods=['POST'])
+def leave_stream_route():
+    data = request.json
+    stream_id = data['streamId']
+    print(f"Received leave_stream request for stream {stream_id}")
+    
+    """ if current_user.is_authenticated:
+        user_id = current_user.id
+        stream = LiveStream.query.get(stream_id)
+        if stream:
+            stream.viewer_count = max(0, stream.viewer_count - 1)
+            db.session.commit()
+            print(f"Updated viewer count for stream {stream_id}: {stream.viewer_count}")
+    
+    return jsonify({"status": "success"}), 200 """
+    return leave_stream(stream_id)

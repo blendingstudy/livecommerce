@@ -36,7 +36,12 @@
                     <h5 class="card-title">{{ product.name }}</h5>
                     <p class="card-text">{{ product.description[:100] }}{% if product.description|length > 100 %}...{% endif %}</p>
                     <p class="card-text"><strong>가격:</strong> {{ product.price | round(2) }}원</p>
-                    <p class="card-text"><strong>재고:</strong> {{ product.stock }}개</p>
+                    <p class="card-text"><strong>재고:</strong> 
+                        {% if product.stock > 0 %}
+                            {{ product.stock }}개
+                        {% else %}
+                            <span class="text-danger">품절</span>
+                        {% endif %}</p>
                     <p class="card-text"><strong>카테고리:</strong> {{ product.category.name }}</p>
                 </div>
                 <div class="card-footer">

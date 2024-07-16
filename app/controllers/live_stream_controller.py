@@ -161,3 +161,14 @@ def add_product():
         })
 
     return jsonify({'error': 'Invalid form data'}), 400
+
+def leave_stream(stream_id):
+    if current_user.is_authenticated:
+        user_id = current_user.id
+        stream = LiveStream.query.get(stream_id)
+        if stream:
+            stream.viewer_count = max(0, stream.viewer_count - 1)
+            db.session.commit()
+            print(f"Updated viewer count for stream {stream_id}: {stream.viewer_count}")
+    
+    return jsonify({"status": "success"}), 200

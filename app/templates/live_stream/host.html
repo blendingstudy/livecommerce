@@ -29,6 +29,34 @@
         max-height: 300px;
         overflow-y: auto;
     }
+
+    #viewerList {
+        margin-top: 20px;
+        border: 1px solid #ddd;
+        padding: 10px;
+        max-height: 300px;
+        overflow-y: auto;
+    }
+
+    #viewers li {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 5px;
+    }
+
+    .kick-button {
+        background-color: #ff4d4d;
+        color: white;
+        border: none;
+        padding: 5px 10px;
+        cursor: pointer;
+        border-radius: 3px;
+    }
+
+    .kick-button:hover {
+        background-color: #ff1a1a;
+    }
 </style>
 {% endblock %}
 
@@ -49,10 +77,16 @@
         </div>
         <div class="col-md-4">
             <h3>채팅</h3>
+            <div>시청자 수: <span id="viewerCount">0</span></div>
             <div id="chatContainer"></div>
             <div class="input-group">
                 <input type="text" id="chatInput" class="form-control" placeholder="메시지 입력...">
                 <button class="btn btn-outline-secondary" type="button" id="sendChatBtn">전송</button>
+            </div>
+
+            <div id="viewerList">
+                <h3>시청자 목록</h3>
+                <ul id="viewers"></ul>
             </div>
 
             <h3 class="mt-4">제품 목록</h3>
@@ -62,13 +96,13 @@
                     <div class="card-body">
                         <h5 class="card-title">{{ product.name }}</h5>
                         <p class="card-text">가격: {{ product.price }}</p>
-                        <button class="btn btn-sm btn-primary showProductBtn" data-product-id="{{ product.id }}">제품 표시</button>
+                        <button class="btn btn-sm btn-primary showProductBtn" data-product-id="{{ product.id }}">제품
+                            표시</button>
                     </div>
                 </div>
                 {% endfor %}
             </div>
         </div>
-        
     </div>
 </div>
 {% endblock %}
@@ -85,7 +119,7 @@
     let isStreaming = false;
     let localStream;
     let peerConnections = {};
-    const configuration = {'iceServers': [{'urls': 'stun:stun.l.google.com:19302'}]};
+    const configuration = { 'iceServers': [{ 'urls': 'stun:stun.l.google.com:19302' }] };
 
     socket.on('connect', () => {
         console.log('Socket.IO connected');
@@ -109,7 +143,7 @@
             localStream = await navigator.mediaDevices.getUserMedia(constraints);
             document.getElementById('localVideo').srcObject = localStream;
             console.log('User media acquired successfully');
-            
+
             // 비디오 트랙 설정 로깅
             localStream.getVideoTracks().forEach(track => {
                 console.log('Video track settings:', track.getSettings());
@@ -199,6 +233,11 @@
         }
     });
 
+    socket.on('viewer_left', function (data) {
+        console.log('Viewer left:', data);
+        updateViewerList();
+    });
+
     socket.on('answer', async (data) => {
         console.log('Received answer from viewer:', data.from);
         const peerConnection = peerConnections[data.from];
@@ -229,9 +268,43 @@
 
     document.querySelectorAll('.showProductBtn').forEach(button => {
         button.addEventListener('click', (event) => {
+            console.log('show product');
             const productId = event.target.dataset.productId;
             socket.emit('show_product', { streamId: streamId, productId: productId });
         });
+    });
+
+    socket.on('update_viewer_list', function (viewers) {
+        console.log('Updating viewer list:', viewers);
+        updateViewerList(viewers);
+    });
+
+    function updateViewerList(viewers) {
+        const viewerList = document.getElementById('viewerList');
+        viewerList.innerHTML = '<h3>시청자 목록</h3>';
+        if (viewers) {
+            for (const [userId, username] of Object.entries(viewers)) {
+                const li = document.createElement('li');
+                li.textContent = username;
+                const kickButton = document.createElement('button');
+                kickButton.textContent = '강퇴';
+                kickButton.onclick = () => kickViewer(userId);
+                li.appendChild(kickButton);
+                viewerList.appendChild(li);
+            }
+        }
+    }
+
+    function kickViewer(userId) {
+        console.log('kick')
+        if (confirm('이 시청자를 강퇴하시겠습니까?')) {
+            socket.emit('kick_viewer', { streamId: streamId, userId: userId });
+        }
+    }
+
+    socket.on('viewer_count_update', function (data) {
+        console.log('Viewer count updated:', data.count);
+        document.getElementById('viewerCount').textContent = data.count;
     });
 </script>
 {% endblock %}

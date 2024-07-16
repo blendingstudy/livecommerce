@@ -99,7 +99,8 @@ def checkout():
     order, error =  payment_controller.create_order(cart_items)
     
     if error:
-        return jsonify({'error': error}), 400
+        flash(error, 'error')
+        return redirect(url_for('cart.view_cart'))
 
     return redirect(url_for('payment.checkout', order_id=order.id))
 

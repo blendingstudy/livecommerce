@@ -8,7 +8,8 @@ from app.controllers.live_stream_controller import (
     watch_stream,
     end_stream,
     get_stream_info,
-    leave_stream
+    leave_stream,
+    delete_stream
 )
 from app.models.live_stream import LiveStream
 
@@ -86,3 +87,7 @@ def leave_stream_route():
     
     return jsonify({"status": "success"}), 200 """
     return leave_stream(stream_id)
+
+@live_stream.route('/delete_stream/<int:stream_id>', methods=['POST'])
+def delete_stream_route(stream_id):
+    return delete_stream(stream_id)

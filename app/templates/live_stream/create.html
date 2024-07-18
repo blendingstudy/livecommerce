@@ -31,6 +31,15 @@
             <small class="form-text text-muted">Ctrl 키를 누른 채 클릭하여 여러 제품을 선택할 수 있습니다.</small>
         </div>
 
+        <div class="mb-3">
+            {{ stream_form.start_time.label(class="form-label") }}
+            {{ stream_form.start_time(class="form-control", type="datetime-local") }}
+            {% for error in stream_form.start_time.errors %}
+            <span class="text-danger">{{ error }}</span>
+            {% endfor %}
+            <small class="form-text text-muted">시작 시간을 비워두면 즉시 시작됩니다.</small>
+        </div>
+
         <div>
             {{ stream_form.submit(class="btn btn-primary") }}
         </div>

@@ -13,11 +13,12 @@ class Config:
     SQLALCHEMY_DATABASE_URI = 'postgresql://kyounje:9350/live_commerce'
     
     # 이메일 설정 (필요한 경우)
-    MAIL_SERVER = os.environ.get('MAIL_SERVER')
-    MAIL_PORT = int(os.environ.get('MAIL_PORT') or 25)
-    MAIL_USE_TLS = os.environ.get('MAIL_USE_TLS') is not None
+    MAIL_SERVER = 'smtp.gmail.com'
+    MAIL_PORT = 587
+    MAIL_USE_TLS = True
     MAIL_USERNAME = os.environ.get('MAIL_USERNAME')
     MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD')
+    MAIL_DEFAULT_SENDER = os.environ.get('MAIL_DEFAULT_SENDER')
     
     # 파일 업로드 설정
     UPLOAD_FOLDER = os.path.join(os.path.dirname(__file__), 'uploads')
@@ -28,6 +29,8 @@ class Config:
     
     IAMPORT_API_KEY = '0054575041252252'
     IAMPORT_API_SECRET = '4y5PCQ5KoXFWRL7UltBruL2pvSnux1jjVFwo2L5hFqCNYH4AJGjXsCPbmGezWzwnWkHNP7Uv4ApDwb4w'
+    
+    SCHEDULER_TIMEZONE = "Asia/Seoul"  # 또는 해당하는 로컬 시간대
 
 class DevelopmentConfig(Config):
     """개발 환경 설정"""

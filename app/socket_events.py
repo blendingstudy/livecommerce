@@ -9,6 +9,8 @@ from app import db
 
 # 시청자 목록을 저장할 딕셔너리
 viewers = {}
+# 강퇴된 시청자 목록을 저장할 딕셔너리 추가
+banned_viewers = {}
 
 @socketio.on('connect')
 def handle_connect():
@@ -45,6 +47,13 @@ def handle_join_stream(data):
     user_id = current_user.id
     username = current_user.username
     room = f'stream_{stream_id}'
+    
+    # 강퇴된 사용자인지 확인
+    if stream_id in banned_viewers and user_id in banned_viewers[stream_id]:
+        print(f"Banned user {user_id} attempted to join stream {stream_id}")
+        emit('join_denied', {'reason': 'You have been banned from this stream'}, room=request.sid)
+        return
+    
     join_room(room)
     print(f'User {request.sid} joined stream {stream_id} as {user_type}')
     
@@ -117,6 +126,10 @@ def handle_end_stream(data):
         db.session.commit()
         emit('stream_ended', {'streamId': stream_id}, room=f'stream_{stream_id}')
         print(f'Stream {stream_id} ended')
+        
+        # 강퇴된 사용자 목록 초기화
+        if stream_id in banned_viewers:
+            del banned_viewers[stream_id]
 
 @socketio.on('offer')
 def handle_offer(data):
@@ -197,6 +210,11 @@ def on_kick_viewer(data):
         if stream_id in viewers and user_id in viewers[stream_id]:
             kicked_username = viewers[stream_id][user_id]
             del viewers[stream_id][user_id]
+            
+            # 강퇴된 사용자 목록에 추가
+            if stream_id not in banned_viewers:
+                banned_viewers[stream_id] = set()
+            banned_viewers[stream_id].add(user_id)
             
             print(f"Emitting viewer_kicked event for user {user_id}")
             emit('viewer_kicked', {'userId': user_id, 'username': kicked_username}, room=f'stream_{stream_id}')

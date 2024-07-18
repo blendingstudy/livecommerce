@@ -7,7 +7,7 @@
     <h1 class="mb-4">내 라이브 스트림 관리</h1>
 
     <div class="mb-4">
-        <a href="{{ url_for('live_stream.stream_create') }}" class="btn btn-primary">새 라이브 스트림 생성</a>
+        <a href="{{ url_for('live_stream.stream_create') }}" class="btn btn-primary">새 라이브 스트림 생성/예약</a>
     </div>
 
     <ul class="nav nav-tabs mb-3" id="streamTabs" role="tablist">
@@ -31,9 +31,10 @@
                         </div>
                         <p class="mb-1">{{ stream.description|truncate(100) }}</p>
                         <div class="mt-2">
-                            <a href="{{ url_for('live_stream.edit_stream', stream_id=stream.id) }}" class="btn btn-sm btn-outline-primary">수정</a>
-                            <a href="{{ url_for('live_stream.start_stream', stream_id=stream.id) }}" class="btn btn-sm btn-success">시작</a>
-                            <form action="{{ url_for('live_stream.delete_stream', stream_id=stream.id) }}" method="POST" style="display: inline;">
+                            <!-- <a href="" class="btn btn-sm btn-outline-primary">수정</a> -->
+                            <a href="{{ url_for('live_stream.stream_host', stream_id=stream.id) }}" class="btn btn-sm btn-success">시작</a>
+                            <form action="{{ url_for('live_stream.delete_stream_route', stream_id=stream.id) }}" method="POST" style="display: inline;">
+                                {{ form.hidden_tag() }}
                                 <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('이 스트림을 삭제하시겠습니까?');">삭제</button>
                             </form>
                         </div>

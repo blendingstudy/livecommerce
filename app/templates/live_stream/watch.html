@@ -217,6 +217,7 @@
         if (data.streamId === streamId) {
             alert('스트림이 종료되었습니다.');
             // 여기에 스트림 종료 후 처리 로직 추가 (예: 페이지 리다이렉트)
+            window.location.href = '/streams';
         }
     });
 
@@ -322,6 +323,12 @@
     // 페이지가 언로드될 때
     window.addEventListener('unload', () => {
         sendLeaveStream();
+    });
+
+    socket.on('join_denied', (data) => {
+        alert(data.reason);
+        // 여기에 적절한 UI 업데이트 로직 추가 (예: 스트림 페이지에서 나가기)
+        window.location.href = '/streams';  // 메인 페이지로 리다이렉트
     });
 
 </script>

@@ -105,9 +105,11 @@ def streams():
         flash(error, 'error')
         return redirect(url_for('host.dashboard'))
     
+    form = LiveStreamForm()
+    
     return render_template('host/streams.html', 
                            upcoming_streams=streams['upcoming'],
-                           past_streams=streams['past'])
+                           past_streams=streams['past'], form=form)
 
 @host.route('/revenue')
 @login_required

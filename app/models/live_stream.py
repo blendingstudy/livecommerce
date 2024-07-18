@@ -1,11 +1,16 @@
+from pytz import timezone
 from app import db
 from datetime import datetime
 
 class LiveStream(db.Model):
+    def get_local_time():
+        seoul_tz = timezone('Asia/Seoul')  # 또는 해당하는 로컬 시간대
+        return seoul_tz.localize(datetime.now())
+    
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(100), nullable=False)
     description = db.Column(db.Text, nullable=True)
-    start_time = db.Column(db.DateTime, default=datetime.utcnow)
+    start_time = db.Column(db.DateTime, default=get_local_time)
     end_time = db.Column(db.DateTime, nullable=True)
     is_live = db.Column(db.Boolean, default=True)
     viewer_count = db.Column(db.Integer, default=0)
@@ -21,11 +26,13 @@ class LiveStream(db.Model):
     revenues = db.relationship('Revenue', back_populates='live_stream', lazy='dynamic')
     favorited_by = db.relationship('User', secondary='user_favorite_streams', back_populates='favorite_streams')
 
-    def __init__(self, title, seller_id, description=None, stream_url=None):
+    def __init__(self, title, seller_id, description=None, stream_url=None, start_time=None, is_live=True):
         self.title = title
         self.seller_id = seller_id
         self.description = description
         self.stream_url = stream_url
+        self.start_time = start_time
+        self.is_live = is_live
 
     def __repr__(self):
         return f'<LiveStream {self.title}>'

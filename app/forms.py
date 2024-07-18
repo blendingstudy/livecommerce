@@ -1,6 +1,6 @@
 from flask_wtf import FlaskForm
-from wtforms import DateTimeField, FieldList, FileField, FloatField, FormField, HiddenField, IntegerField, RadioField, SelectField, SelectMultipleField, StringField, PasswordField, BooleanField, SubmitField, TextAreaField, ValidationError
-from wtforms.validators import DataRequired, Email as EmailValidator, EqualTo, Length, NumberRange
+from wtforms import DateTimeField, DateTimeLocalField, FieldList, FileField, FloatField, FormField, HiddenField, IntegerField, RadioField, SelectField, SelectMultipleField, StringField, PasswordField, BooleanField, SubmitField, TextAreaField, ValidationError
+from wtforms.validators import DataRequired, Email as EmailValidator, EqualTo, Length, NumberRange, Optional
 from flask_wtf.file import FileAllowed
 
 from app.models.product import Category
@@ -53,7 +53,7 @@ class LiveStreamForm(FlaskForm):
     description = TextAreaField('설명', validators=[Length(max=500)])
     existing_products = SelectMultipleField('기존 제품', coerce=int)
     #new_products = FieldList(FormField(ProductForm), min_entries=1)
-    #scheduled_start_time = DateTimeField('예약 시작 시간', format='%Y-%m-%dT%H:%M', validators=[DataRequired()])
+    start_time = DateTimeLocalField('예약 시작 시간', format='%Y-%m-%dT%H:%M', validators=[Optional()])
     thumbnail = FileField('썸네일 이미지', validators=[FileAllowed(['jpg', 'png'], '이미지만 업로드 가능합니다.')])
     submit = SubmitField('스트림 생성')
     #category = SelectField('카테고리', coerce=int, validators=[DataRequired()])
@@ -73,3 +73,4 @@ class UserProfileForm(FlaskForm):
     password = PasswordField('새 비밀번호', validators=[EqualTo('confirm_password', message='비밀번호가 일치하지 않습니다')])
     confirm_password = PasswordField('새 비밀번호 확인')
     submit = SubmitField('프로필 업데이트')
+    

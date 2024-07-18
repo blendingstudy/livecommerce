@@ -2,7 +2,7 @@ from flask import app, current_app, flash, jsonify, redirect, url_for, render_te
 from flask_login import current_user, login_required
 from app import db, socketio
 from app.models import LiveStream, Product, User
-from app.forms import LiveStreamForm
+from app.forms import LiveStreamForm#, LiveStreamScheduleForm
 from datetime import datetime
 
 from app.models.product import Category
@@ -13,38 +13,6 @@ def list_streams(page=1, per_page=10):
 
 from app.models import LiveStream, Product
 from app.forms import LiveStreamForm, ProductForm
-
-""" @login_required
-def create_stream():
-    if not current_user.is_seller:
-        flash('판매자만 라이브 스트림을 생성할 수 있습니다.', 'warning')
-        return redirect(url_for('main.index'))
-
-    form = LiveStreamForm()
-    # 기존 제품 선택지 설정
-    form.existing_products.choices = [(p.id, p.name) for p in Product.query.filter_by(seller_id=current_user.id).all()]
-    # 카테고리 선택지 설정
-    form.category.choices = [(c.id, c.name) for c in Category.query.all()]
-
-    if form.validate_on_submit():
-        stream = LiveStream(
-            title=form.title.data,
-            description=form.description.data,
-            seller_id=current_user.id
-        )
-        
-        # 선택된 제품 추가
-        for product_id in form.existing_products.data:
-            product = Product.query.get(product_id)
-            if product:
-                stream.products.append(product)
-        
-        db.session.add(stream)
-        db.session.commit()
-        flash('라이브 스트림이 생성되었습니다.', 'success')
-        return redirect(url_for('live_stream.stream_host', stream_id=stream.id))
-    
-    return render_template('live_stream/create.html', form=form) """
 
 @login_required
 def create_stream():
@@ -64,10 +32,16 @@ def create_stream():
     product_form.category.choices = [(c.id, c.name) for c in Category.query.all()]
 
     if stream_form.validate_on_submit():
+        if stream_form.start_time is not None:
+            live = False
+        else:
+            live = True
         stream = LiveStream(
             title=stream_form.title.data,
             description=stream_form.description.data,
-            seller_id=current_user.id
+            seller_id=current_user.id,
+            is_live=live,
+            start_time=stream_form.start_time.data
         )
         
         for product_id in stream_form.existing_products.data:
@@ -78,7 +52,10 @@ def create_stream():
         db.session.add(stream)
         db.session.commit()
         flash('라이브 스트림이 생성되었습니다.', 'success')
-        return redirect(url_for('live_stream.stream_host', stream_id=stream.id))
+        if stream.is_live is True:
+            return redirect(url_for('live_stream.stream_host', stream_id=stream.id))
+        else:
+            return redirect(url_for('host.streams'))
     
     # 폼 유효성 검사 실패 시 에러 출력
     if stream_form.errors:
@@ -89,6 +66,8 @@ def create_stream():
 @login_required
 def host_stream(stream_id):
     stream = LiveStream.query.get_or_404(stream_id)
+    stream.is_live = True
+    db.session.commit()
     if stream.seller_id != current_user.id:
         abort(403)
     return render_template('live_stream/host.html', stream=stream)
@@ -172,3 +151,17 @@ def leave_stream(stream_id):
             print(f"Updated viewer count for stream {stream_id}: {stream.viewer_count}")
     
     return jsonify({"status": "success"}), 200
+
+@login_required
+def delete_stream(stream_id):
+    stream = LiveStream.query.get_or_404(stream_id)
+
+    try:
+        db.session.delete(stream)
+        db.session.commit()
+        flash('라이브방송 예약이 성공적으로 취소되었습니다.', 'success')
+        return redirect(url_for('host.streams'))
+    except Exception as e:
+        db.session.rollback()
+        flash(f'취소 중 오류가 발생했습니다: {str(e)}', 'danger')
+        return redirect(url_for('host.streams'))

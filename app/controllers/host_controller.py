@@ -20,6 +20,7 @@ def get_host_streams(user_id):
     now = datetime.utcnow()
     
     upcoming_streams = LiveStream.query.filter_by(seller_id=user_id, is_live=False).filter(LiveStream.start_time > now).order_by(LiveStream.start_time).all()
+    print(now)
     past_streams = LiveStream.query.filter_by(seller_id=user_id, is_live=False).filter(LiveStream.start_time <= now).order_by(LiveStream.start_time.desc()).all()
     
     return {

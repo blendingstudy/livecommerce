@@ -2,6 +2,7 @@ import socket
 import ssl
 import dns
 from flask import Flask, render_template
+from flask_mail import Mail
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 from flask_migrate import Migrate
@@ -9,6 +10,7 @@ from flask_socketio import SocketIO
 from flask_cors import CORS
 from flask_wtf.csrf import CSRFProtect
 import requests
+from flask_apscheduler import APScheduler
 
 # 데이터베이스 객체 생성
 db = SQLAlchemy()
@@ -17,6 +19,8 @@ login_manager = LoginManager()
 # SocketIO 객체 생성 (실시간 통신을 위해)
 socketio = SocketIO()
 csrf = CSRFProtect()
+scheduler = APScheduler()
+mail = Mail()
 
 def create_app(config_name='development'):
     app = Flask(__name__)
@@ -32,6 +36,10 @@ def create_app(config_name='development'):
 
     # 데이터베이스 초기화
     db.init_app(app)
+    mail.init_app(app)
+    # APScheduler 설정
+    app.config['SCHEDULER_API_ENABLED'] = True
+    scheduler.init_app(app)
 
     # 마이그레이션 설정
     Migrate(app, db)
@@ -100,5 +108,15 @@ def create_app(config_name='development'):
             'cancelled': '취소됨'
         }
         return displays.get(status, status)
+
+    from app import tasks
+
+    # 스케줄러 작업 등록
+    @scheduler.task('cron', id='check_upcoming_streams', minute='*')
+    def scheduled_task():
+        with app.app_context():
+            tasks.check_upcoming_streams()
+
+    scheduler.start()
     
     return app

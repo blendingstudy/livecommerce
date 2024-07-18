@@ -191,6 +191,7 @@
         document.getElementById('startStreamBtn').style.display = 'inline-block';
         document.getElementById('endStreamBtn').style.display = 'none';
         isStreaming = false;
+        window.location.href = '/';
     });
 
     socket.on('viewer_joined', async (viewerId) => {

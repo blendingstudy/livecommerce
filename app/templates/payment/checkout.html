@@ -1,11 +1,9 @@
 {% extends "base.html" %}
-
 {% block title %}주문 결제{% endblock %}
-
 {% block content %}
 <div class="container mt-5">
     <h1 class="mb-4">주문 결제</h1>
-    
+
     <div class="row">
         <div class="col-md-8">
             <h2>주문 상품</h2>
@@ -28,21 +26,24 @@
                     </tr>
                     {% endfor %}
                 </tbody>
-                <tfoot>
-                    <tr>
-                        <td colspan="3" class="text-right"><strong>총 금액</strong></td>
-                        <td><strong>{{ order.total_price | format_currency }}</strong></td>
-                    </tr>
-                </tfoot>
             </table>
+
+            <div id="order-summary" class="mt-4">
+                <p><strong>할인 전 금액:</strong> <span id="original-price">{{ order.total_price | format_currency }}</span>
+                </p>
+                <p><strong>할인 금액:</strong> <span id="discount-amount">{{ order.discount_amount | format_currency
+                        }}</span></p>
+                <p><strong>최종 결제 금액:</strong> <span id="final-price">{{ (order.total_price - order.discount_amount) |
+                        format_currency }}</span></p>
+            </div>
         </div>
-        
+
         <div class="col-md-4">
             <h2>결제 정보</h2>
-            <form id="payment-form" 
-                  data-order-id="{{ order.id }}"
-                  data-product-name="{{ order.items[0].product.name }}{% if order.items|length > 1 %} 외 {{ order.items|length - 1 }}건{% endif %}"
-                  data-total-price="{{ order.total_price }}">
+            <form id="payment-form"
+                data-order-id="{{ order.id }}"
+                data-product-name="{{ order.items[0].product.name }}{% if order.items|length > 1 %} 외 {{ order.items|length - 1 }}건{% endif %}"
+                data-total-price="{{ order.total_price }}">
                 <div class="mb-3">
                     <label for="buyer-name" class="form-label">이름</label>
                     <input type="text" class="form-control" id="buyer-name" required>
@@ -55,6 +56,13 @@
                     <label for="buyer-email" class="form-label">이메일</label>
                     <input type="email" class="form-control" id="buyer-email" required>
                 </div>
+                <div class="mb-3">
+                    <label for="coupon-code" class="form-label">쿠폰 코드</label>
+                    <div class="input-group">
+                        <input type="text" class="form-control" id="coupon-code">
+                        <button class="btn btn-outline-secondary" type="button" id="apply-coupon">적용</button>
+                    </div>
+                </div>
                 <button type="submit" class="btn btn-primary btn-lg w-100">결제하기</button>
             </form>
         </div>
@@ -64,6 +72,36 @@
 
 {% block scripts %}
 {{ super() }}
+<script>
+    document.getElementById('apply-coupon').addEventListener('click', function () {
+        var couponCode = document.getElementById('coupon-code').value;
+        fetch('/apply_coupon', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify({
+                order_id: {{ order.id }},
+            coupon_code: couponCode
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                document.getElementById('discount-amount').textContent = data.discount_amount + '원';
+                document.getElementById('final-price').textContent = data.final_price + '원';
+                alert('쿠폰이 성공적으로 적용되었습니다.');
+            } else {
+                alert('쿠폰 적용에 실패했습니다: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('쿠폰 적용 중 오류가 발생했습니다.');
+        });
+    });
+</script>
 <script type="text/javascript" src="https://cdn.iamport.kr/js/iamport.payment-1.1.8.js"></script>
 <script src="{{ url_for('static', filename='js/iamport.js') }}"></script>
 {% endblock %}

@@ -53,7 +53,7 @@ def create_app(config_name='development'):
     from app import socket_events
 
     # 블루프린트 등록
-    from app.views import auth, product, live_stream, payment, cart, user, host
+    from app.views import auth, product, live_stream, payment, cart, user, host, discount
     app.register_blueprint(auth.auth)
     app.register_blueprint(user.user)
     app.register_blueprint(product.product)
@@ -61,6 +61,7 @@ def create_app(config_name='development'):
     app.register_blueprint(cart.cart)
     app.register_blueprint(payment.payment)
     app.register_blueprint(host.host)
+    app.register_blueprint(discount.discount)
 
     from app.models.user import User
     from app.models.product import Product
@@ -69,6 +70,8 @@ def create_app(config_name='development'):
     from app.models.cart import Cart, CartItem
     from app.models.review import Review
     from app.models.revenue import Revenue
+    from app.models.coupon import Coupon
+    from app.models.discount import Discount
 
     # 사용자 로더 콜백 설정
     @login_manager.user_loader
@@ -117,6 +120,6 @@ def create_app(config_name='development'):
         with app.app_context():
             tasks.check_upcoming_streams()
 
-    scheduler.start()
+    #scheduler.start()
     
     return app

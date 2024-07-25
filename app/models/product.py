@@ -22,6 +22,9 @@ class Product(db.Model):
     category_id = db.Column(db.Integer, db.ForeignKey('category.id'), nullable=True)
     category = db.relationship('Category', backref=db.backref('products', lazy=True))
     favorited_by = db.relationship('User', secondary='user_favorite_products', back_populates='favorite_products')
+    
+    discount_id = db.Column(db.Integer, db.ForeignKey('discount.id'))
+    discount = db.relationship('Discount', backref='products')
 
     def __init__(self, name, description, price, stock, seller_id, image_url=None, category_id=None):
         self.name = name

@@ -235,3 +235,11 @@ def on_kick_viewer(data):
     except Exception as e:
         print(f"Error kicking viewer: {str(e)}")
         print(f"Traceback: {traceback.format_exc()}")
+
+@socketio.on('new_order', namespace='/')
+def handle_new_order(data):
+    print('new_order')
+    stream_id = data['streamId']
+    order_info = data['orderInfo']
+    room = f'stream_{stream_id}'
+    emit('order_notification', order_info, room=room)

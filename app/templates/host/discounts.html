@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+{% block title %}할인 관리{% endblock %}
+{% block content %}
+<div class="container mt-4">
+    <h1 class="mb-4">할인 관리</h1>
+    
+    <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#createDiscountModal">
+        새 할인 생성
+    </button>
+
+    {% if discounts %}
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>이름</th>
+                    <th>설명</th>
+                    <th>할인 유형</th>
+                    <th>할인 값</th>
+                    <th>시작일</th>
+                    <th>종료일</th>
+                    <th>상태</th>
+                    <th>작업</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for discount in discounts %}
+                    <tr>
+                        <td>{{ discount.name }}</td>
+                        <td>{{ discount.description }}</td>
+                        <td>{{ '퍼센트' if discount.discount_type == 'percentage' else '고정 금액' }}</td>
+                        <td>{{ discount.value }}{{ '%' if discount.discount_type == 'percentage' else '원' }}</td>
+                        <td>{{ discount.start_date.strftime('%Y-%m-%d') }}</td>
+                        <td>{{ discount.end_date.strftime('%Y-%m-%d') }}</td>
+                        <td>
+                            <span class="badge {% if discount.is_active %}bg-success{% else %}bg-danger{% endif %}">
+                                {{ '활성' if discount.is_active else '비활성' }}
+                            </span>
+                        </td>
+                        <td>
+                            <button class="btn btn-sm btn-primary" onclick="editDiscount({{ discount.id }})">수정</button>
+                            <button class="btn btn-sm btn-danger" onclick="deleteDiscount({{ discount.id }})">삭제</button>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>등록된 할인이 없습니다.</p>
+    {% endif %}
+</div>
+
+<!-- 할인 생성 모달 -->
+<div class="modal fade" id="createDiscountModal" tabindex="-1" aria-labelledby="createDiscountModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="createDiscountModalLabel">새 할인 생성</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="createDiscountForm">
+                    <div class="mb-3">
+                        <label for="name" class="form-label">할인 이름</label>
+                        <input type="text" class="form-control" id="name" name="name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="description" class="form-label">설명</label>
+                        <textarea class="form-control" id="description" name="description"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="discount_type" class="form-label">할인 유형</label>
+                        <select class="form-select" id="discount_type" name="discount_type" required>
+                            <option value="percentage">퍼센트</option>
+                            <option value="fixed">고정 금액</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="value" class="form-label">할인 값</label>
+                        <input type="number" class="form-control" id="value" name="value" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="start_date" class="form-label">시작일</label>
+                        <input type="date" class="form-control" id="start_date" name="start_date" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="end_date" class="form-label">종료일</label>
+                        <input type="date" class="form-control" id="end_date" name="end_date" required>
+                    </div>
+                    <div class="mb-3 form-check">
+                        <input type="checkbox" class="form-check-input" id="is_active" name="is_active">
+                        <label class="form-check-label" for="is_active">활성화</label>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+                <button type="button" class="btn btn-primary" onclick="createDiscount()">생성</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+    function createDiscount() {
+        // AJAX를 사용하여 할인 생성 요청 보내기
+    }
+
+    function editDiscount(discountId) {
+        // 할인 수정 모달 열기 및 데이터 로드
+    }
+
+    function deleteDiscount(discountId) {
+        // 할인 삭제 확인 및 요청 보내기
+    }
+</script>
+{% endblock %}

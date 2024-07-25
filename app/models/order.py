@@ -13,6 +13,10 @@ class Order(db.Model):
     user = db.relationship('User', backref=db.backref('orders', lazy='dynamic'))
     items = db.relationship('OrderItem', backref='order', lazy=True, cascade="all, delete-orphan")
     payment = db.relationship('Payment', backref='order', lazy=True, uselist=False)
+    
+    coupon_id = db.Column(db.Integer, db.ForeignKey('coupon.id'))
+    coupon = db.relationship('Coupon', backref='orders')
+    discount_amount = db.Column(db.Float, default=0)
 
     def __repr__(self):
         return f'<Order {self.id}>'

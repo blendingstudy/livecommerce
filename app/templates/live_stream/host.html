@@ -102,6 +102,12 @@
                 </div>
                 {% endfor %}
             </div>
+
+            <div id="orderNotifications" class="mt-3">
+                <h4>실시간 주문 알림</h4>
+                <ul id="orderList" class="list-group">
+                </ul>
+            </div>
         </div>
     </div>
 </div>
@@ -306,6 +312,22 @@
     socket.on('viewer_count_update', function (data) {
         console.log('Viewer count updated:', data.count);
         document.getElementById('viewerCount').textContent = data.count;
+    });
+
+    socket.on('order_notification', (orderInfo) => {
+        const orderList = document.getElementById('orderList');
+        const listItem = document.createElement('li');
+        listItem.className = 'list-group-item';
+        listItem.innerHTML = `
+            <strong>${orderInfo.product_name}</strong><br>
+            수량: ${orderInfo.quantity}<br>
+            총 금액: ₩${orderInfo.total_price.toLocaleString()}
+        `;
+        orderList.prepend(listItem);
+
+        // 알림음 재생 (선택사항)
+        /* const audio = new Audio('/static/sounds/notification.mp3');
+        audio.play(); */
     });
 </script>
 {% endblock %}

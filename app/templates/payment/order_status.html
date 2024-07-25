@@ -11,7 +11,8 @@
             주문 번호: {{ order.id }}
         </div>
         <div class="card-body">
-            <h5 class="card-title">주문 상태: 
+            <h5 class="card-title">
+                주문 상태: 
                 <span class="badge {% if order.status == 'pending' %}bg-warning
                                    {% elif order.status == 'paid' %}bg-success
                                    {% elif order.status == 'shipped' %}bg-info
@@ -23,6 +24,13 @@
             </h5>
             <p class="card-text">주문 일시: {{ order.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</p>
             <p class="card-text">총 금액: {{ order.total_price | format_currency }}</p>
+            {% if order.discount_amount %}
+                <p class="card-text">할인 금액: {{ order.discount_amount | format_currency }}</p>
+                <p class="card-text">최종 결제 금액: {{ (order.total_price - order.discount_amount) | format_currency }}</p>
+            {% endif %}
+            {% if order.coupon %}
+                <p class="card-text">적용된 쿠폰: {{ order.coupon.code }}</p>
+            {% endif %}
         </div>
     </div>
 
@@ -80,4 +88,36 @@
     </div>
     {% endif %}
 </div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+    {% if order.status == 'pending' %}
+    document.getElementById('cancelOrderBtn').addEventListener('click', function() {
+        if (confirm('정말로 이 주문을 취소하시겠습니까?')) {
+            fetch('{{ url_for("payment.cancel_order", order_id=order.id) }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token() }}'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    alert('주문 취소 중 오류가 발생했습니다: ' + data.error);
+                } else {
+                    alert('주문이 성공적으로 취소되었습니다.');
+                    location.reload();
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('주문 취소 중 오류가 발생했습니다.');
+            });
+        }
+    });
+    {% endif %}
+</script>
 {% endblock %}

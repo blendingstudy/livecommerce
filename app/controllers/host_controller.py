@@ -2,7 +2,7 @@ from flask import current_app, jsonify
 from sqlalchemy import func
 from app import db
 from app.models import User, LiveStream, Product, Revenue, Order
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from app.models.order import OrderItem
 
@@ -19,9 +19,9 @@ def get_host_streams(user_id):
     
     now = datetime.utcnow()
     
-    upcoming_streams = LiveStream.query.filter_by(seller_id=user_id, is_live=False).filter(LiveStream.start_time > now).order_by(LiveStream.start_time).all()
+    upcoming_streams = LiveStream.query.filter_by(seller_id=user_id, is_live=False).filter(LiveStream.start_time > LiveStream.get_local_time()).order_by(LiveStream.start_time).all()
     print(now)
-    past_streams = LiveStream.query.filter_by(seller_id=user_id, is_live=False).filter(LiveStream.start_time <= now).order_by(LiveStream.start_time.desc()).all()
+    past_streams = LiveStream.query.filter_by(seller_id=user_id, is_live=False).filter(LiveStream.start_time <= LiveStream.get_local_time()).order_by(LiveStream.start_time.desc()).all()
     
     return {
         'upcoming': upcoming_streams,
@@ -100,10 +100,6 @@ def delete_product(user_id, product_id):
         return False, "제품 삭제 중 오류가 발생했습니다."
 
 def get_host_revenue(user_id, period='all'):
-    host = User.query.filter_by(id=user_id, is_seller=True).first()
-    if not host:
-        return None, "호스트를 찾을 수 없습니다."
-    
     query = Revenue.query.filter_by(user_id=user_id)
     
     if period == 'daily':

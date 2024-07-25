@@ -6,4 +6,4 @@ app = create_app()
 #print(app.url_map)
 
 if __name__ == '__main__':
-    socketio.run(app, use_reloader=False)
+    socketio.run(app)#, use_reloader=False)

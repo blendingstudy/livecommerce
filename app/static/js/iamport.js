@@ -64,7 +64,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const orderData = {
                 orderId: paymentForm.dataset.orderId,
                 productName: paymentForm.dataset.productName,
-                totalPrice: parseFloat(paymentForm.dataset.totalPrice),
+                totalPrice: parseFloat(document.getElementById('final-price').textContent.replace(/[^0-9.-]+/g,"")),
                 buyerEmail: document.getElementById('buyer-email').value,
                 buyerName: document.getElementById('buyer-name').value,
                 buyerTel: document.getElementById('buyer-tel').value,
@@ -76,7 +76,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     pay_method: "card",
                     merchant_uid: `order_${orderData.orderId}`,
                     name: orderData.productName,
-                    amount: orderData.totalPrice,
+                    amount: Math.round(orderData.totalPrice), // 소수점 제거 및 반올림
                     buyer_email: orderData.buyerEmail,
                     buyer_name: orderData.buyerName,
                     buyer_tel: orderData.buyerTel,

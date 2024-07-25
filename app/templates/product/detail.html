@@ -5,22 +5,24 @@
     <div class="row">
         <div class="col-md-6">
             {% if product.image_url %}
-            <img src="{{ url_for('static', filename='product_images/' + product.image_url) }}" class="img-fluid rounded" alt="{{ product.name }}">
+                <img src="{{ url_for('static', filename='product_images/' + product.image_url) }}" alt="{{ product.name }}" class="img-fluid rounded">
             {% else %}
-            <img src="{{ url_for('static', filename='images/default_product.jpg') }}" class="img-fluid rounded" alt="Default product image">
+                <img src="{{ url_for('static', filename='images/default_product.jpg') }}" alt="Default product image" class="img-fluid rounded">
             {% endif %}
         </div>
         <div class="col-md-6">
             <h1 class="mb-3">{{ product.name }}</h1>
-            <p class="lead">{{ product.description }}</p>
-            <p><strong>가격:</strong> {{ product.price | round(2) }}원</p>
-            <p><strong>재고:</strong> 
-                {% if product.stock > 0 %}
-                    {{ product.stock }}개
+            <p>{{ product.description }}</p>
+            <p><strong>가격:</strong> 
+                {% if product.discount %}
+                    <span class="text-muted"><del>{{ product.price | round(2) }}원</del></span>
+                    <span class="text-danger">{{ (product.price * (1 - product.discount.value/100)) | round(2) }}원</span>
+                    <span class="badge bg-danger">{{ product.discount.value }}% 할인</span>
                 {% else %}
-                    <span class="text-danger">품절</span>
+                    {{ product.price | round(2) }}원
                 {% endif %}
             </p>
+            <p><strong>재고:</strong> {% if product.stock > 0 %}{{ product.stock }}개{% else %}<span class="text-danger">품절</span>{% endif %}</p>
             <p><strong>카테고리:</strong> {{ product.category.name }}</p>
             <p><strong>판매자:</strong> {{ product.seller.username }}</p>
             
@@ -30,32 +32,29 @@
                     <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal">삭제</button>
                 {% else %}
                     {% if product.stock > 0 %}
-                    <form action="{{ url_for('cart.add_to_cart') }}" method="POST">
-                        {{ form.hidden_tag() }}
-                        {{ form.product_id(value=product.id) }}
-                        <div class="input-group mb-3">
-                            {{ form.quantity(class="form-control", value=1, min=1, max=product.stock) }}
-                            <button type="submit" class="btn btn-primary">장바구니에 추가</button>
-                        </div>
-                    </form>
+                        <form method="POST" action="{{ url_for('cart.add_to_cart') }}">
+                            {{ form.hidden_tag() }}
+                            {{ form.product_id(value=product.id) }}
+                            <div class="input-group mb-3">
+                                {{ form.quantity(class="form-control", value=1, min=1, max=product.stock) }}
+                                <button type="submit" class="btn btn-primary">장바구니에 추가</button>
+                            </div>
+                        </form>
                     {% else %}
-                    <button class="btn btn-secondary" disabled>품절</button>
+                        <button class="btn btn-secondary" disabled>품절</button>
                     {% endif %}
                 {% endif %}
             {% else %}
-                <p>구매하려면 <a href="{{ url_for('auth.login') }}">로그인</a>해주세요.</p>
+                <a href="{{ url_for('auth.login') }}" class="btn btn-primary">구매하려면 로그인해주세요.</a>
             {% endif %}
         </div>
     </div>
-
-    <!-- 제품 리뷰 섹션 (옵션) -->
     <div class="mt-5">
         <h2>리뷰</h2>
-        <!-- 여기에 리뷰 목록과 리뷰 작성 폼을 추가할 수 있습니다 -->
+        <!-- 리뷰 섹션 구현 -->
     </div>
 </div>
 
-<!-- 삭제 확인 모달 -->
 {% if current_user.is_authenticated and current_user.id == product.seller_id %}
 <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
     <div class="modal-dialog">

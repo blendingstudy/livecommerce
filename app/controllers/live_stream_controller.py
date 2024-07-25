@@ -6,6 +6,7 @@ from app.forms import LiveStreamForm#, LiveStreamScheduleForm
 from datetime import datetime
 
 from app.models.product import Category
+from app.models.revenue import Revenue
 
 def list_streams(page=1, per_page=10):
     streams = LiveStream.query.filter_by(is_live=True).order_by(LiveStream.start_time.desc()).paginate(page=page, per_page=per_page, error_out=False)
@@ -32,7 +33,8 @@ def create_stream():
     product_form.category.choices = [(c.id, c.name) for c in Category.query.all()]
 
     if stream_form.validate_on_submit():
-        if stream_form.start_time is not None:
+        print(stream_form.start_time)
+        if stream_form.start_time.data is not None:
             live = False
         else:
             live = True
@@ -85,7 +87,12 @@ def end_stream(stream_id):
     if stream.seller_id != current_user.id:
         abort(403)
     stream.end_stream()
-    print('end')
+    
+    # 스트림 관련 수익 정보 업데이트
+    revenues = Revenue.query.filter_by(live_stream_id=stream.id).all()
+    for revenue in revenues:
+        revenue.status = 'paid'  # 또는 다른 적절한 상태로 변경
+    
     db.session.commit()
     flash('라이브 스트림이 종료되었습니다.', 'success')
     return redirect(url_for('live_stream.list_streams'))

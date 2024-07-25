@@ -19,7 +19,8 @@ from .order import Order, OrderItem
 
 from .review import Review
 from .revenue import Revenue
-
+from .coupon import Coupon
+from .discount import Discount
 # Payment 모델 임포트
 #from .payment import Payment
 

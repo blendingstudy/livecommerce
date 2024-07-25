@@ -1,0 +1,204 @@
+{% extends "base.html" %}
+{% block title %}쿠폰 관리{% endblock %}
+{% block content %}
+<div class="container mt-4">
+    <h1 class="mb-4">쿠폰 관리</h1>
+    
+    <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#createCouponModal">
+        새 쿠폰 생성
+    </button>
+
+    {% if coupons %}
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>코드</th>
+                    <th>할인</th>
+                    <th>사용 제한</th>
+                    <th>사용 횟수</th>
+                    <th>만료일</th>
+                    <th>상태</th>
+                    <th>작업</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for coupon in coupons %}
+                    <tr>
+                        <td>{{ coupon.code }}</td>
+                        <td>
+                            {% if coupon.discount_type == 'percentage' %}
+                                {{ coupon.discount_value }}%
+                            {% else %}
+                                {{ coupon.discount_value | round(2) }}원
+                            {% endif %}
+                        </td>
+                        <td>{{ coupon.usage_limit }}</td>
+                        <td>{{ coupon.used_count }}</td>
+                        <td>{{ coupon.expiration_date.strftime('%Y-%m-%d') }}</td>
+                        <td>
+                            <span class="badge {% if coupon.expiration_date > now %}bg-success{% else %}bg-danger{% endif %}">
+                                {{ '유효' if coupon.expiration_date > now else '만료' }}
+                            </span>
+                        </td>
+                        <td>
+                            <button class="btn btn-sm btn-primary" onclick="editCoupon({{ coupon.id }})">수정</button>
+                            <button class="btn btn-sm btn-danger" onclick="deleteCoupon({{ coupon.id }})">삭제</button>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>등록된 쿠폰이 없습니다.</p>
+    {% endif %}
+</div>
+
+<!-- 쿠폰 생성 모달 -->
+<div class="modal fade" id="createCouponModal" tabindex="-1" aria-labelledby="createCouponModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="createCouponModalLabel">새 쿠폰 생성</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="createCouponForm">
+                    <div class="mb-3">
+                        <label for="code" class="form-label">쿠폰 코드</label>
+                        <input type="text" class="form-control" id="code" name="code" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="discount_type" class="form-label">할인 유형</label>
+                        <select class="form-select" id="discount_type" name="discount_type" required>
+                            <option value="percentage">퍼센트</option>
+                            <option value="fixed">고정 금액</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="discount_value" class="form-label">할인 값</label>
+                        <input type="number" class="form-control" id="discount_value" name="discount_value" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="usage_limit" class="form-label">사용 제한</label>
+                        <input type="number" class="form-control" id="usage_limit" name="usage_limit" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="expiration_date" class="form-label">만료일</label>
+                        <input type="date" class="form-control" id="expiration_date" name="expiration_date" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+                <button type="button" class="btn btn-primary" onclick="createCoupon()">생성</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+    function createCoupon() {
+        const form = document.getElementById('createCouponForm');
+        const formData = new FormData(form);
+        const data = Object.fromEntries(formData.entries());
+
+        fetch('{{ url_for("discount.create_coupon") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify(data)
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.id) {
+                    alert('쿠폰이 성공적으로 생성되었습니다.');
+                    location.reload();
+                } else {
+                    alert('쿠폰 생성에 실패했습니다: ' + data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('쿠폰 생성 중 오류가 발생했습니다.');
+            });
+    }
+
+    function editCoupon(couponId) {
+        // 쿠폰 정보를 가져와서 폼에 채우기
+        fetch(`/discount/coupons/${couponId}`)
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('editCouponId').value = data.id;
+                document.getElementById('editCode').value = data.code;
+                document.getElementById('editDiscountId').value = data.discount_id;
+                document.getElementById('editUsageLimit').value = data.usage_limit;
+                document.getElementById('editExpirationDate').value = data.expiration_date.split('T')[0];
+
+                $('#editCouponModal').modal('show');
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('쿠폰 정보를 불러오는 중 오류가 발생했습니다.');
+            });
+    }
+
+    function updateCoupon() {
+        const form = document.getElementById('editCouponForm');
+        const formData = new FormData(form);
+        const data = Object.fromEntries(formData.entries());
+        const couponId = data.id;
+
+        fetch(`/discount/coupons/${couponId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify(data)
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.message) {
+                    alert('쿠폰이 성공적으로 수정되었습니다.');
+                    location.reload();
+                } else {
+                    alert('쿠폰 수정에 실패했습니다: ' + data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('쿠폰 수정 중 오류가 발생했습니다.');
+            });
+    }
+
+    function deleteCoupon(couponId) {
+        if (confirm('정말로 이 쿠폰을 삭제하시겠습니까?')) {
+            fetch(`/discount/coupons/${couponId}`, {
+                method: 'DELETE',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token() }}'
+                }
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.message) {
+                        alert('쿠폰이 성공적으로 삭제되었습니다.');
+                        location.reload();
+                    } else {
+                        alert('쿠폰 삭제에 실패했습니다: ' + data.error);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('쿠폰 삭제 중 오류가 발생했습니다.');
+                });
+        }
+    }
+</script>
+{% endblock %}

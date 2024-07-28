@@ -1,4 +1,6 @@
-from flask import Blueprint, request
+from flask import Blueprint, redirect, render_template, request, url_for
+from flask_login import login_required
+from app.controllers import product_controller
 from app.controllers.product_controller import (
     list_products,
     get_product,
@@ -6,7 +8,9 @@ from app.controllers.product_controller import (
     edit_product,
     delete_product,
     search_products,
-    get_seller_products
+    get_seller_products,
+    get_discounted_products,
+    toggle_favorite
 )
 
 product = Blueprint('product', __name__)
@@ -43,3 +47,15 @@ def product_search():
 def seller_products(seller_id):
     page = request.args.get('page', 1, type=int)
     return get_seller_products(seller_id, page)
+
+@product.route('/discounted')
+def discounted_products():
+    page = request.args.get('page', 1, type=int)
+    discounted_products = get_discounted_products(page)
+    return render_template('product/discounted.html', products=discounted_products)
+
+@product.route('/toggle_favorite/<int:product_id>', methods=['POST'])
+@login_required
+def toggle_favorite_route(product_id):
+    toggle_favorite(product_id)
+    return redirect(url_for('product.product_detail', product_id=product_id))

@@ -7,12 +7,12 @@
     <h1 class="mb-4">라이브 스트림</h1>
 
     <!-- 검색 폼 -->
-    <form action="{{ url_for('live_stream.search_streams') }}" method="GET" class="mb-4">
+    <!-- <form action="{{ url_for('live_stream.search_streams') }}" method="GET" class="mb-4">
         <div class="input-group">
             <input type="text" name="q" class="form-control" placeholder="스트림 검색..." value="{{ request.args.get('q', '') }}">
             <button type="submit" class="btn btn-primary">검색</button>
         </div>
-    </form>
+    </form> -->
 
     {% if current_user.is_authenticated and current_user.is_seller %}
     <div class="mb-4">

@@ -88,14 +88,16 @@ def get_cart_items():
     
     for item in cart.items:
         product = Product.query.get(item.product_id)
+        discounted_price = product.get_discounted_price()
         cart_items.append({
             'id': item.id,
             'product_id': item.product_id,
             'product_name': product.name,
-            'price': product.price,
+            'original_price': product.price,
+            'discounted_price': discounted_price,
             'quantity': item.quantity,
-            'subtotal': item.quantity * product.price,
-            'product': product  # 전체 product 객체를 추가
+            'subtotal': item.quantity * discounted_price,
+            'product': product
         })
     
     return cart_items
@@ -105,4 +107,4 @@ def get_cart_total():
     if not cart:
         return 0
 
-    return cart.get_total_price()
+    return sum(item['subtotal'] for item in get_cart_items())

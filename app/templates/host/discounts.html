@@ -3,54 +3,51 @@
 {% block content %}
 <div class="container mt-4">
     <h1 class="mb-4">할인 관리</h1>
-    
-    <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#createDiscountModal">
-        새 할인 생성
-    </button>
+    <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#createDiscountModal">새 할인 생성</button>
 
     {% if discounts %}
-        <table class="table table-striped">
-            <thead>
-                <tr>
-                    <th>이름</th>
-                    <th>설명</th>
-                    <th>할인 유형</th>
-                    <th>할인 값</th>
-                    <th>시작일</th>
-                    <th>종료일</th>
-                    <th>상태</th>
-                    <th>작업</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for discount in discounts %}
-                    <tr>
-                        <td>{{ discount.name }}</td>
-                        <td>{{ discount.description }}</td>
-                        <td>{{ '퍼센트' if discount.discount_type == 'percentage' else '고정 금액' }}</td>
-                        <td>{{ discount.value }}{{ '%' if discount.discount_type == 'percentage' else '원' }}</td>
-                        <td>{{ discount.start_date.strftime('%Y-%m-%d') }}</td>
-                        <td>{{ discount.end_date.strftime('%Y-%m-%d') }}</td>
-                        <td>
-                            <span class="badge {% if discount.is_active %}bg-success{% else %}bg-danger{% endif %}">
-                                {{ '활성' if discount.is_active else '비활성' }}
-                            </span>
-                        </td>
-                        <td>
-                            <button class="btn btn-sm btn-primary" onclick="editDiscount({{ discount.id }})">수정</button>
-                            <button class="btn btn-sm btn-danger" onclick="deleteDiscount({{ discount.id }})">삭제</button>
-                        </td>
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>이름</th>
+                <th>설명</th>
+                <th>할인 유형</th>
+                <th>할인 값</th>
+                <th>시작일</th>
+                <th>종료일</th>
+                <th>상태</th>
+                <th>작업</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for discount in discounts %}
+            <tr>
+                <td>{{ discount.name }}</td>
+                <td>{{ discount.description }}</td>
+                <td>{{ '퍼센트' if discount.discount_type == 'percentage' else '고정 금액' }}</td>
+                <td>{{ discount.value }}{{ '%' if discount.discount_type == 'percentage' else '원' }}</td>
+                <td>{{ discount.start_date.strftime('%Y-%m-%d') }}</td>
+                <td>{{ discount.end_date.strftime('%Y-%m-%d') }}</td>
+                <td><span class="badge {% if discount.is_active %}bg-success{% else %}bg-danger{% endif %}">{{ '활성' if
+                        discount.is_active else '비활성' }}</span></td>
+                <td>
+                    <button class="btn btn-sm btn-warning edit-discount"
+                        data-discount-id="{{ discount.id }}">수정</button>
+                    <button class="btn btn-sm btn-danger delete-discount"
+                        data-discount-id="{{ discount.id }}">삭제</button>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
     {% else %}
-        <p>등록된 할인이 없습니다.</p>
+    <p>등록된 할인이 없습니다.</p>
     {% endif %}
 </div>
 
 <!-- 할인 생성 모달 -->
-<div class="modal fade" id="createDiscountModal" tabindex="-1" aria-labelledby="createDiscountModalLabel" aria-hidden="true">
+<div class="modal fade" id="createDiscountModal" tabindex="-1" aria-labelledby="createDiscountModalLabel"
+    aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
@@ -61,60 +58,217 @@
                 <form id="createDiscountForm">
                     <div class="mb-3">
                         <label for="name" class="form-label">할인 이름</label>
-                        <input type="text" class="form-control" id="name" name="name" required>
+                        <input type="text" class="form-control" id="name" required>
                     </div>
                     <div class="mb-3">
                         <label for="description" class="form-label">설명</label>
-                        <textarea class="form-control" id="description" name="description"></textarea>
+                        <textarea class="form-control" id="description" rows="3"></textarea>
                     </div>
                     <div class="mb-3">
                         <label for="discount_type" class="form-label">할인 유형</label>
-                        <select class="form-select" id="discount_type" name="discount_type" required>
+                        <select class="form-select" id="discount_type" required>
                             <option value="percentage">퍼센트</option>
                             <option value="fixed">고정 금액</option>
                         </select>
                     </div>
                     <div class="mb-3">
                         <label for="value" class="form-label">할인 값</label>
-                        <input type="number" class="form-control" id="value" name="value" required>
+                        <input type="number" class="form-control" id="value" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="product" class="form-label">제품</label>
+                        <select class="form-select" id="product" required>
+                            <option value="">제품 선택</option>
+                            {% for product in products %}
+                            <option value="{{ product.id }}">{{ product.name }}</option>
+                            {% endfor %}
+                        </select>
                     </div>
                     <div class="mb-3">
                         <label for="start_date" class="form-label">시작일</label>
-                        <input type="date" class="form-control" id="start_date" name="start_date" required>
+                        <input type="date" class="form-control" id="start_date" required>
                     </div>
                     <div class="mb-3">
                         <label for="end_date" class="form-label">종료일</label>
-                        <input type="date" class="form-control" id="end_date" name="end_date" required>
+                        <input type="date" class="form-control" id="end_date" required>
                     </div>
                     <div class="mb-3 form-check">
-                        <input type="checkbox" class="form-check-input" id="is_active" name="is_active">
+                        <input type="checkbox" class="form-check-input" id="is_active">
                         <label class="form-check-label" for="is_active">활성화</label>
                     </div>
                 </form>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
-                <button type="button" class="btn btn-primary" onclick="createDiscount()">생성</button>
+                <button type="button" class="btn btn-primary" id="createDiscountBtn">생성</button>
             </div>
         </div>
     </div>
 </div>
 
+<!-- 할인 수정 모달 -->
+<div class="modal fade" id="editDiscountModal" tabindex="-1" aria-labelledby="editDiscountModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editDiscountModalLabel">할인 수정</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editDiscountForm">
+                    <input type="hidden" id="edit_discount_id">
+                    <div class="mb-3">
+                        <label for="edit_name" class="form-label">할인 이름</label>
+                        <input type="text" class="form-control" id="edit_name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit_description" class="form-label">설명</label>
+                        <textarea class="form-control" id="edit_description" rows="3"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit_discount_type" class="form-label">할인 유형</label>
+                        <select class="form-select" id="edit_discount_type" required>
+                            <option value="percentage">퍼센트</option>
+                            <option value="fixed">고정 금액</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit_value" class="form-label">할인 값</label>
+                        <input type="number" class="form-control" id="edit_value" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="product" class="form-label">제품</label>
+                        <select class="form-select" id="product" required>
+                            <option value="">제품 선택</option>
+                            {% for product in products %}
+                            <option value="{{ product.id }}">{{ product.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit_start_date" class="form-label">시작일</label>
+                        <input type="date" class="form-control" id="edit_start_date" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit_end_date" class="form-label">종료일</label>
+                        <input type="date" class="form-control" id="edit_end_date" required>
+                    </div>
+                    <div class="mb-3 form-check">
+                        <input type="checkbox" class="form-check-input" id="edit_is_active">
+                        <label class="form-check-label" for="edit_is_active">활성화</label>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+                <button type="button" class="btn btn-primary" id="updateDiscountBtn">수정</button>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}
 
 {% block scripts %}
 {{ super() }}
 <script>
-    function createDiscount() {
-        // AJAX를 사용하여 할인 생성 요청 보내기
-    }
+    $.ajaxSetup({
+        beforeSend: function (xhr, settings) {
+            if (!/^(GET|HEAD|OPTIONS|TRACE)$/i.test(settings.type) && !this.crossDomain) {
+                xhr.setRequestHeader("X-CSRFToken", "{{ csrf_token() }}");
+            }
+        }
+    });
+    $(document).ready(function () {
+        // 할인 생성
+        $('#createDiscountBtn').click(function () {
+            var data = {
+                name: $('#name').val(),
+                description: $('#description').val(),
+                discount_type: $('#discount_type').val(),
+                value: parseFloat($('#value').val()),
+                start_date: $('#start_date').val(),
+                end_date: $('#end_date').val(),
+                is_active: $('#is_active').is(':checked'),
+                product_id: $('#product').val()
+            };
 
-    function editDiscount(discountId) {
-        // 할인 수정 모달 열기 및 데이터 로드
-    }
+            $.ajax({
+                url: '/discounts',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(data),
+                success: function (response) {
+                    alert('할인이 성공적으로 생성되었습니다.');
+                    location.reload();
+                },
+                error: function (xhr, status, error) {
+                    alert('할인 생성 중 오류가 발생했습니다: ' + xhr.responseJSON.error);
+                }
+            });
+        });
 
-    function deleteDiscount(discountId) {
-        // 할인 삭제 확인 및 요청 보내기
-    }
+        // 할인 수정 모달 열기
+        $('.edit-discount').click(function () {
+            var discountId = $(this).data('discount-id');
+            $.get('/discounts/' + discountId, function (data) {
+                $('#edit_discount_id').val(data.id);
+                $('#edit_name').val(data.name);
+                $('#edit_description').val(data.description);
+                $('#edit_discount_type').val(data.discount_type);
+                $('#edit_value').val(data.value);
+                $('#edit_start_date').val(data.start_date);
+                $('#edit_end_date').val(data.end_date);
+                $('#edit_is_active').prop('checked', data.is_active);
+                $('#editDiscountModal').modal('show');
+            });
+        });
+
+        // 할인 수정
+        $('#updateDiscountBtn').click(function () {
+            var discountId = $('#edit_discount_id').val();
+            var data = {
+                name: $('#edit_name').val(),
+                description: $('#edit_description').val(),
+                discount_type: $('#edit_discount_type').val(),
+                value: parseFloat($('#edit_value').val()),
+                start_date: $('#edit_start_date').val(),
+                end_date: $('#edit_end_date').val(),
+                is_active: $('#edit_is_active').is(':checked')
+            };
+
+            $.ajax({
+                url: '/discounts/' + discountId,
+                type: 'PUT',
+                contentType: 'application/json',
+                data: JSON.stringify(data),
+                success: function (response) {
+                    alert('할인이 성공적으로 수정되었습니다.');
+                    location.reload();
+                },
+                error: function (xhr, status, error) {
+                    alert('할인 수정 중 오류가 발생했습니다: ' + xhr.responseJSON.error);
+                }
+            });
+        });
+
+        // 할인 삭제
+        $('.delete-discount').click(function () {
+            var discountId = $(this).data('discount-id');
+            if (confirm('정말로 이 할인을 삭제하시겠습니까?')) {
+                $.ajax({
+                    url: '/discounts/' + discountId,
+                    type: 'DELETE',
+                    success: function (response) {
+                        alert('할인이 성공적으로 삭제되었습니다.');
+                        location.reload();
+                    },
+                    error: function (xhr, status, error) {
+                        alert('할인 삭제 중 오류가 발생했습니다: ' + xhr.responseJSON.error);
+                    }
+                });
+            }
+        });
+    });
 </script>
 {% endblock %}

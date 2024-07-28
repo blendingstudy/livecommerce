@@ -83,7 +83,8 @@ def create_app(config_name='development'):
         products = Product.query.limit(8).all()
         print(products)
         popular_products = Product.query.order_by(Product.popularity_score.desc()).limit(3).all()
-        return render_template('index.html', products=products, popular_products=popular_products)
+        live = LiveStream.query.filter_by(is_live=True).limit(5).all()
+        return render_template('index.html', products=products, popular_products=popular_products, live=live)
     
     @app.template_filter('format_currency')
     def format_currency(value):

@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block title %}리뷰 수정 - {{ review.product.name }}{% endblock %}
+{% block content %}
+<div class="container mt-4">
+    <h1 class="mb-4">{{ review.product.name }}에 대한 리뷰 수정</h1>
+    
+    <form method="POST">
+        {{ form.hidden_tag() }}
+        <div class="mb-3">
+            {{ form.rating.label(class="form-label") }}
+            {{ form.rating(class="form-control", min="1", max="5") }}
+            {% for error in form.rating.errors %}
+            <span class="text-danger">{{ error }}</span>
+            {% endfor %}
+        </div>
+        <div class="mb-3">
+            {{ form.content.label(class="form-label") }}
+            {{ form.content(class="form-control", rows="5") }}
+            {% for error in form.content.errors %}
+            <span class="text-danger">{{ error }}</span>
+            {% endfor %}
+        </div>
+        {{ form.submit(class="btn btn-primary") }}
+        <a href="{{ url_for('user.reviews') }}" class="btn btn-secondary">취소</a>
+    </form>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // 별점을 시각적으로 표시하는 기능 (선택사항)
+    $(document).ready(function() {
+        const ratingInput = $('#rating');
+        const stars = $('<div class="stars"></div>');
+        for (let i = 1; i <= 5; i++) {
+            stars.append($('<span class="star">☆</span>').data('rating', i));
+        }
+        ratingInput.after(stars);
+
+        stars.on('click', '.star', function() {
+            const rating = $(this).data('rating');
+            ratingInput.val(rating);
+            updateStars(rating);
+        });
+
+        function updateStars(rating) {
+            stars.find('.star').each(function(index) {
+                $(this).text(index < rating ? '★' : '☆');
+            });
+        }
+
+        // 초기 별점 표시
+        updateStars(ratingInput.val());
+    });
+</script>
+{% endblock %}

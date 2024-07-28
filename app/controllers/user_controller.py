@@ -37,12 +37,6 @@ def get_purchase_history(user_id):
         return None, "사용자를 찾을 수 없습니다."
     return user.get_purchase_history(), None
 
-def get_user_reviews(user_id):
-    user = User.query.get(user_id)
-    if not user:
-        return None, "사용자를 찾을 수 없습니다."
-    return user.get_reviews(), None
-
 def add_to_favorites(user_id, item_type, item_id):
     user = User.query.get(user_id)
     if not user:

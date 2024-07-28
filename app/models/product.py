@@ -14,17 +14,15 @@ class Product(db.Model):
     view_count = db.Column(db.Integer, default=0)
     order_count = db.Column(db.Integer, default=0)
     
-    # 판매자와의 관계 설정
     seller_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     seller = db.relationship('User', backref=db.backref('products', lazy=True))
 
-    # 카테고리와의 관계 설정 (옵션)
     category_id = db.Column(db.Integer, db.ForeignKey('category.id'), nullable=True)
     category = db.relationship('Category', backref=db.backref('products', lazy=True))
     favorited_by = db.relationship('User', secondary='user_favorite_products', back_populates='favorite_products')
     
-    discount_id = db.Column(db.Integer, db.ForeignKey('discount.id'))
-    discount = db.relationship('Discount', backref='products')
+    discounts = db.relationship('Discount', back_populates='product', cascade="all, delete-orphan")
+    reviews = db.relationship('Review', back_populates='product', lazy='dynamic')
 
     def __init__(self, name, description, price, stock, seller_id, image_url=None, category_id=None):
         self.name = name
@@ -57,6 +55,24 @@ class Product(db.Model):
     @hybrid_property
     def popularity_score(self):
         return self.view_count + (self.order_count * 10)  # 주문 수에 더 높은 가중치 부여
+    
+    def get_discounted_price(self):
+        if self.discounts:
+            discount = self.discounts[0]
+            if discount.discount_type == 'percentage':
+                return self.price * (1 - discount.value / 100)
+            else:  # fixed amount
+                return max(self.price - discount.value, 0)
+        return self.price
+
+    def get_discount_info(self):
+        if self.discounts:
+            discount = self.discounts[0]
+            return {
+                'type': discount.discount_type,
+                'value': discount.value
+            }
+        return None
 
 class Category(db.Model):
     id = db.Column(db.Integer, primary_key=True)

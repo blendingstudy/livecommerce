@@ -1,7 +1,8 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, abort
 from flask_login import login_required, current_user
-from app.controllers import user_controller
+from app.controllers import review_controller, user_controller
 from app.forms import UserProfileForm
+from app.models.review import Review
 
 user = Blueprint('user', __name__)
 
@@ -69,16 +70,6 @@ def purchase_history():
     
     return render_template('user/purchase_history.html', history=history)
 
-@user.route('/reviews')
-@login_required
-def reviews():
-    reviews, error = user_controller.get_user_reviews(current_user.id)
-    if error:
-        flash(error, 'error')
-        return redirect(url_for('main.index'))
-    
-    return render_template('user/reviews.html', reviews=reviews)
-
 @user.route('/favorites')
 @login_required
 def favorites():
@@ -121,3 +112,34 @@ def revenue():
         return redirect(url_for('main.index'))
     
     return render_template('user/revenue.html', revenue_data=revenue_data) """
+    
+@user.route('/reviews')
+@login_required
+def reviews():
+    user_reviews = Review.query.filter_by(user_id=current_user.id).all()
+    
+    # 사용자가 구매한 모든 상품 가져오기
+    purchased_products = review_controller.get_purchased_products()
+    
+    # 사용자가 리뷰를 작성한 상품 ID 목록
+    reviewed_product_ids = [review.product_id for review in user_reviews]
+    
+    return render_template('user/reviews.html', 
+                           reviews=user_reviews, 
+                           purchased_products=purchased_products, 
+                           reviewed_products=reviewed_product_ids)
+
+@user.route('/write_review/<int:product_id>', methods=['GET', 'POST'])
+@login_required
+def write_review_route(product_id):
+    return review_controller.write_review(product_id)
+
+@user.route('/edit_review/<int:review_id>', methods=['GET', 'POST'])
+@login_required
+def edit_review_route(review_id):
+    return review_controller.edit_review(review_id)
+
+@user.route('/review/<int:review_id>/delete', methods=['POST'])
+@login_required
+def delete_review_route(review_id):
+    return review_controller.delete_review(review_id)

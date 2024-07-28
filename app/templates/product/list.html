@@ -1,8 +1,7 @@
 {% extends "base.html" %}
-
 {% block title %}제품 목록{% endblock %}
-
 {% block content %}
+
 <div class="container mt-4">
     <h1 class="mb-4">제품 목록</h1>
 
@@ -12,7 +11,6 @@
     </div>
     {% endif %}
 
-    <!-- 카테고리 필터 추가 -->
     <div class="mb-4">
         <h5>카테고리</h5>
         <div class="btn-group" role="group" aria-label="카테고리 필터">
@@ -28,21 +26,36 @@
         <div class="col">
             <div class="card h-100">
                 {% if product.image_url %}
-                    <img src="{{ url_for('static', filename='product_images/' + product.image_url) }}" class="img-fluid rounded" alt="{{ product.name }}">
+                <img src="{{ url_for('static', filename='product_images/' + product.image_url) }}" alt="{{ product.name }}" class="card-img-top">
                 {% else %}
-                    <img src="{{ url_for('static', filename='images/default_product.jpg') }}" class="card-img-top" alt="Default product image">
+                <img src="{{ url_for('static', filename='images/default_product.jpg') }}" alt="Default product image" class="card-img-top">
                 {% endif %}
                 <div class="card-body">
                     <h5 class="card-title">{{ product.name }}</h5>
                     <p class="card-text">{{ product.description[:100] }}{% if product.description|length > 100 %}...{% endif %}</p>
-                    <p class="card-text"><strong>가격:</strong> {{ product.price | round(2) }}원</p>
-                    <p class="card-text"><strong>재고:</strong> 
+                    <p><strong>가격:</strong> 
+                        {% if product.discounts %}
+                            {% set discount = product.discounts[0] %}
+                            <span class="text-muted"><del>{{ product.price | round(2) }}원</del></span>
+                            {% if discount.discount_type == 'percentage' %}
+                                <span class="text-danger">{{ (product.price * (1 - discount.value/100)) | round(2) }}원</span>
+                                <span class="badge bg-danger">{{ discount.value }}% 할인</span>
+                            {% else %}
+                                <span class="text-danger">{{ (product.price - discount.value) | round(2) }}원</span>
+                                <span class="badge bg-danger">{{ discount.value }}원 할인</span>
+                            {% endif %}
+                        {% else %}
+                            {{ product.price | round(2) }}원
+                        {% endif %}
+                    </p>
+                    <p><strong>재고:</strong> 
                         {% if product.stock > 0 %}
                             {{ product.stock }}개
                         {% else %}
                             <span class="text-danger">품절</span>
-                        {% endif %}</p>
-                    <p class="card-text"><strong>카테고리:</strong> {{ product.category.name }}</p>
+                        {% endif %}
+                    </p>
+                    <p><strong>카테고리:</strong> {{ product.category.name }}</p>
                 </div>
                 <div class="card-footer">
                     <a href="{{ url_for('product.product_detail', product_id=product.id) }}" class="btn btn-primary btn-sm">상세 보기</a>
@@ -60,17 +73,18 @@
         <ul class="pagination justify-content-center">
             {% for page in products.iter_pages() %}
                 {% if page %}
-                    {% if page != products.page %}
-                    <li class="page-item"><a class="page-link" href="{{ url_for('product.products_list', page=page, category=selected_category) }}">{{ page }}</a></li>
-                    {% else %}
-                    <li class="page-item active" aria-current="page"><span class="page-link">{{ page }}</span></li>
-                    {% endif %}
+                    <li class="page-item {% if page == products.page %}active{% endif %}">
+                        <a class="page-link" href="{{ url_for('product.products_list', page=page, category=selected_category) }}">{{ page }}</a>
+                    </li>
                 {% else %}
-                    <li class="page-item disabled"><span class="page-link">...</span></li>
+                    <li class="page-item disabled">
+                        <span class="page-link">...</span>
+                    </li>
                 {% endif %}
             {% endfor %}
         </ul>
     </nav>
     {% endif %}
 </div>
+
 {% endblock %}

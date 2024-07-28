@@ -11,13 +11,13 @@ auth = Blueprint('auth', __name__)
 @auth.route('/register', methods=['GET', 'POST'])
 def register_route():
     if current_user.is_authenticated:
-        return redirect(url_for('main.index'))
+        return redirect(url_for('index'))
     return register()
 
 @auth.route('/login', methods=['GET', 'POST'])
 def login_route():
     if current_user.is_authenticated:
-        return redirect(url_for('main.index'))
+        return redirect(url_for('index'))
     return login()
 
 @auth.route('/logout')

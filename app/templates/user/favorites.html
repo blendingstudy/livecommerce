@@ -5,8 +5,8 @@
 {% block content %}
 <div class="container mt-4">
     <h1 class="mb-4">내 관심 목록</h1>
-    
-    <h2 class="mb-3">관심 있는 라이브 스트림</h2>
+
+    <!-- <h2 class="mb-3">관심 있는 라이브 스트림</h2>
     {% if favorites.streams %}
         <div class="row">
         {% for stream in favorites.streams %}
@@ -32,37 +32,44 @@
         </div>
     {% else %}
         <p>관심 있는 라이브 스트림이 없습니다.</p>
-    {% endif %}
-    
+    {% endif %} -->
+
     <h2 class="mb-3 mt-5">관심 있는 제품</h2>
     {% if favorites.products %}
-        <div class="row">
+    <div class="row">
         {% for product in favorites.products %}
-            <div class="col-md-4 mb-4">
-                <div class="card">
-                    {% if product.image_url %}
-                        <img src="{{ product.image_url }}" class="card-img-top" alt="{{ product.name }}">
-                    {% endif %}
-                    <div class="card-body">
-                        <h5 class="card-title">{{ product.name }}</h5>
-                        <p class="card-text">{{ product.description|truncate(100) }}</p>
-                        <p class="card-text">
-                            <strong>가격:</strong> {{ '${:,.2f}'.format(product.price) }}<br>
-                            <small class="text-muted">판매자: {{ product.seller.username }}</small>
-                        </p>
-                        <a href="{{ url_for('product.product_detail', product_id=product.id) }}" class="btn btn-primary">상세 보기</a>
-                        <form action="{{ url_for('user.remove_favorite', item_type='product', item_id=product.id) }}" method="POST" style="display: inline;">
-                            <button type="submit" class="btn btn-outline-danger" onclick="return confirm('이 제품을 관심 목록에서 제거하시겠습니까?');">제거</button>
-                        </form>
-                    </div>
+        <div class="col-md-4 mb-4">
+            <div class="card">
+                {% if product.image_url %}
+                <img src="{{ url_for('static', filename='product_images/' + product.image_url) }}"
+                    alt="{{ product.name }}" class="img-fluid rounded">
+                {% else %}
+                <img src="{{ url_for('static', filename='images/default_product.jpg') }}" alt="Default product image"
+                    class="img-fluid rounded">
+                {% endif %}
+                <div class="card-body">
+                    <h5 class="card-title">{{ product.name }}</h5>
+                    <p class="card-text">{{ product.description|truncate(100) }}</p>
+                    <p class="card-text">
+                        <strong>가격:</strong> {{ '${:,.2f}'.format(product.price) }}<br>
+                        <small class="text-muted">판매자: {{ product.seller.username }}</small>
+                    </p>
+                    <a href="{{ url_for('product.product_detail', product_id=product.id) }}" class="btn btn-primary">상세
+                        보기</a>
+                    <form action="{{ url_for('user.remove_favorite', item_type='product', item_id=product.id) }}"
+                        method="POST" style="display: inline;">
+                        <button type="submit" class="btn btn-outline-danger"
+                            onclick="return confirm('이 제품을 관심 목록에서 제거하시겠습니까?');">제거</button>
+                    </form>
                 </div>
             </div>
-        {% endfor %}
         </div>
+        {% endfor %}
+    </div>
     {% else %}
-        <p>관심 있는 제품이 없습니다.</p>
+    <p>관심 있는 제품이 없습니다.</p>
     {% endif %}
-    
+
     <a href="{{ url_for('user.mypage') }}" class="btn btn-secondary mt-3">마이페이지로 돌아가기</a>
 </div>
 {% endblock %}

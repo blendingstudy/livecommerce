@@ -28,6 +28,7 @@ class User(UserMixin, db.Model):
     favorite_streams = db.relationship('LiveStream', secondary='user_favorite_streams', back_populates='favorited_by')
     favorite_products = db.relationship('Product', secondary='user_favorite_products', back_populates='favorited_by')
     revenues = db.relationship('Revenue', back_populates='user', lazy='dynamic')
+    discounts = db.relationship('Discount', back_populates='seller', foreign_keys='Discount.seller_id')
 
     def __init__(self, username, email, password, is_seller=False):
         self.username = username

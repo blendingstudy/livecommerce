@@ -62,8 +62,8 @@ class CartItem(db.Model):
     cart = db.relationship('Cart', back_populates='items')
     product = db.relationship('Product')
 
-    def get_subtotal(self):
-        return self.product.price * self.quantity
-
     def __repr__(self):
         return f'<CartItem {self.id}>'
+    
+    def get_subtotal(self):
+        return self.product.get_discounted_price() * self.quantity

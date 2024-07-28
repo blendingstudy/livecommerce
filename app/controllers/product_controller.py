@@ -1,9 +1,13 @@
+from datetime import datetime
 import os
 from flask import current_app, flash, jsonify, redirect, request, url_for, render_template
 from flask_login import current_user, login_required
+from sqlalchemy import and_
 from app import db
+from app.controllers import discount_controller
 from app.models import Product
 from app.forms import AddToCartForm, ProductForm
+from app.models.discount import Discount
 from app.models.product import Category
 from werkzeug.utils import secure_filename
 
@@ -18,9 +22,23 @@ def list_products(page=1, per_page=12, category=None):
 def get_product(product_id):
     product = Product.query.get_or_404(product_id)
     form = AddToCartForm(product_id=product_id)  # 장바구니 추가 폼 생성
+    discount = discount_controller.get_product_discount(product_id)
+    
+    original_price = product.price
+    discounted_price = original_price
+    
+    if discount:
+        if discount.discount_type == 'percentage':
+            discounted_price = original_price * (1 - discount.value / 100)
+        else:  # fixed amount
+            discounted_price = max(original_price - discount.value, 0)
+    
     product.view_count += 1
     db.session.commit()
-    return render_template('product/detail.html', product=product, form=form)
+    return render_template('product/detail.html', product=product, 
+                           original_price=original_price, 
+                           discounted_price=discounted_price,
+                           discount=discount, form=form)
     
 @login_required
 def create_product():
@@ -129,3 +147,26 @@ def search_products(query, page=1, per_page=12):
 def get_seller_products(seller_id, page=1, per_page=12):
     products = Product.query.filter_by(seller_id=seller_id).paginate(page=page, per_page=per_page, error_out=False)
     return render_template('product/seller_products.html', products=products, seller_id=seller_id)
+
+def get_discounted_products(page=1, per_page=12):
+    now = datetime.utcnow()
+    discounted_products = Product.query.join(Product.discounts).filter(
+        and_(
+            Discount.start_date <= now,
+            Discount.end_date >= now,
+            Discount.is_active == True
+        )
+    ).paginate(page=page, per_page=per_page, error_out=False)
+    
+    return discounted_products
+
+def toggle_favorite(product_id):
+    product = Product.query.get_or_404(product_id)
+    if product in current_user.favorite_products:
+        current_user.favorite_products.remove(product)
+        status = 'removed'
+    else:
+        current_user.favorite_products.append(product)
+        status = 'added'
+    db.session.commit()
+    return jsonify({'status': status})

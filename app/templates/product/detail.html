@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 {% block title %}{{ product.name }} - 제품 상세{% endblock %}
 {% block content %}
+
 <div class="container mt-4">
     <div class="row">
         <div class="col-md-6">
@@ -10,29 +11,57 @@
                 <img src="{{ url_for('static', filename='images/default_product.jpg') }}" alt="Default product image" class="img-fluid rounded">
             {% endif %}
         </div>
+
         <div class="col-md-6">
             <h1 class="mb-3">{{ product.name }}</h1>
             <p>{{ product.description }}</p>
+
             <p><strong>가격:</strong> 
-                {% if product.discount %}
+                {% if product.discounts %}
+                    {% set discount = product.discounts[0] %}
                     <span class="text-muted"><del>{{ product.price | round(2) }}원</del></span>
-                    <span class="text-danger">{{ (product.price * (1 - product.discount.value/100)) | round(2) }}원</span>
-                    <span class="badge bg-danger">{{ product.discount.value }}% 할인</span>
+                    {% if discount.discount_type == 'percentage' %}
+                        <span class="text-danger">{{ (product.price * (1 - discount.value/100)) | round(2) }}원</span>
+                        <span class="badge bg-danger">{{ discount.value }}% 할인</span>
+                    {% else %}
+                        <span class="text-danger">{{ (product.price - discount.value) | round(2) }}원</span>
+                        <span class="badge bg-danger">{{ discount.value }}원 할인</span>
+                    {% endif %}
                 {% else %}
                     {{ product.price | round(2) }}원
                 {% endif %}
             </p>
-            <p><strong>재고:</strong> {% if product.stock > 0 %}{{ product.stock }}개{% else %}<span class="text-danger">품절</span>{% endif %}</p>
+
+            <p><strong>재고:</strong> 
+                {% if product.stock > 0 %}
+                    {{ product.stock }}개
+                {% else %}
+                    <span class="text-danger">품절</span>
+                {% endif %}
+            </p>
+
+            <!-- 관심 상품 버튼 추가 -->
+            <form action="{{ url_for('product.toggle_favorite_route', product_id=product.id) }}" method="post" id="favoriteForm">
+                {{ form.hidden_tag() }}
+                <button type="submit" class="btn {% if product in current_user.favorite_products %}btn-danger{% else %}btn-outline-danger{% endif %}" id="favoriteBtn">
+                    {% if product in current_user.favorite_products %}
+                        관심 상품 해제
+                    {% else %}
+                        관심 상품 등록
+                    {% endif %}
+                </button>
+            </form>
+
             <p><strong>카테고리:</strong> {{ product.category.name }}</p>
             <p><strong>판매자:</strong> {{ product.seller.username }}</p>
-            
+
             {% if current_user.is_authenticated %}
                 {% if current_user.id == product.seller_id %}
                     <a href="{{ url_for('product.product_edit', product_id=product.id) }}" class="btn btn-primary">수정</a>
                     <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal">삭제</button>
                 {% else %}
                     {% if product.stock > 0 %}
-                        <form method="POST" action="{{ url_for('cart.add_to_cart') }}">
+                        <form action="{{ url_for('cart.add_to_cart') }}" method="post">
                             {{ form.hidden_tag() }}
                             {{ form.product_id(value=product.id) }}
                             <div class="input-group mb-3">
@@ -49,9 +78,10 @@
             {% endif %}
         </div>
     </div>
+
     <div class="mt-5">
         <h2>리뷰</h2>
-        <!-- 리뷰 섹션 구현 -->
+        <!-- 리뷰 섹션 내용 -->
     </div>
 </div>
 
@@ -68,7 +98,7 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
-                <form action="{{ url_for('product.product_delete', product_id=product.id) }}" method="POST">
+                <form action="{{ url_for('product.product_delete', product_id=product.id) }}" method="post">
                     {{ form.hidden_tag() }}
                     <button type="submit" class="btn btn-danger">삭제</button>
                 </form>
@@ -77,4 +107,5 @@
     </div>
 </div>
 {% endif %}
+
 {% endblock %}

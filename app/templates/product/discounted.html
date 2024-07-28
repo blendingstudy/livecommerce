@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}할인 상품{% endblock %}
+{% block content %}
+<div class="container mt-4">
+    <h1 class="mb-4">할인 상품</h1>
+    
+    <div class="row row-cols-1 row-cols-md-3 row-cols-lg-4 g-4">
+        {% for product in products.items %}
+        <div class="col">
+            <div class="card h-100">
+                {% if product.image_url %}
+                <img src="{{ url_for('static', filename='product_images/' + product.image_url) }}" alt="{{ product.name }}" class="card-img-top">
+                {% else %}
+                <img src="{{ url_for('static', filename='images/default_product.jpg') }}" alt="Default product image" class="card-img-top">
+                {% endif %}
+                <div class="card-body">
+                    <h5 class="card-title">{{ product.name }}</h5>
+                    <p class="card-text">{{ product.description[:100] }}{% if product.description|length > 100 %}...{% endif %}</p>
+                    <p>
+                        <strong>가격:</strong>
+                        <del class="text-muted">{{ product.price | format_currency }}</del>
+                        <span class="text-danger">{{ product.get_discounted_price() | format_currency }}</span>
+                    </p>
+                    <p>
+                        <strong>할인:</strong>
+                        {% set discount = product.discounts[0] %}
+                        {% if discount.discount_type == 'percentage' %}
+                            {{ discount.value }}% 할인
+                        {% else %}
+                            {{ discount.value | format_currency }} 할인
+                        {% endif %}
+                    </p>
+                    <a href="{{ url_for('product.product_detail', product_id=product.id) }}" class="btn btn-primary">상세 보기</a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    {% if products.pages > 1 %}
+    <nav aria-label="Page navigation" class="mt-4">
+        <ul class="pagination justify-content-center">
+            {% for page in products.iter_pages() %}
+                {% if page %}
+                    <li class="page-item {% if page == products.page %}active{% endif %}">
+                        <a class="page-link" href="{{ url_for('product.discounted_products', page=page) }}">{{ page }}</a>
+                    </li>
+                {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link">...</span>
+                    </li>
+                {% endif %}
+            {% endfor %}
+        </ul>
+    </nav>
+    {% endif %}
+</div>
+{% endblock %}

@@ -74,3 +74,8 @@ class UserProfileForm(FlaskForm):
     confirm_password = PasswordField('새 비밀번호 확인')
     submit = SubmitField('프로필 업데이트')
     
+class ReviewForm(FlaskForm):
+    rating = IntegerField('평점', validators=[DataRequired(), NumberRange(min=1, max=5)])
+    content = TextAreaField('리뷰 내용', validators=[DataRequired()])
+    submit = SubmitField('리뷰 제출')
+    

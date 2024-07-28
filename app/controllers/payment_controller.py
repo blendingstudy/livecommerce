@@ -2,6 +2,7 @@ from flask import current_app
 from flask_login import current_user
 from app import socketio
 from app import db
+from app.controllers import discount_controller
 from app.models.live_stream import LiveStream
 from app.models.order import Order, OrderItem, Payment
 from app.models.product import Product
@@ -30,9 +31,10 @@ def create_order(products):
             return None, f"상품 {product.name}의 재고가 부족합니다."
         
         product.order_count += item['quantity']
-        price = product.price * item['quantity']
-        total_price += price
-        order_items.append(OrderItem(product_id=product.id, quantity=item['quantity'], price=price))
+        #price = product.price * item['quantity']
+        discounted_price = discount_controller.apply_discount(product, item['quantity'])
+        total_price += discounted_price
+        order_items.append(OrderItem(product_id=product.id, quantity=item['quantity'], price=discounted_price))
 
     order = Order(user_id=current_user.id, total_price=total_price, status='pending')
     order.items = order_items

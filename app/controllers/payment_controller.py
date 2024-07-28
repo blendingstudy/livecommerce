@@ -98,7 +98,7 @@ def process_payment(order_id, payment_method, transaction_id):
         # 재고 감소
         for item in order.items:
             product = item.product
-            product.stock -= item.quantity
+            update_stock(product.id, item.quantity)
 
         # 결제 완료 후 쿠폰 사용 확정
         finalize_coupon_usage(order)
@@ -120,11 +120,11 @@ def process_payment(order_id, payment_method, transaction_id):
                 'quantity': item.quantity,
                 'total_price': item.price * item.quantity
             }
-            socketio.emit('new_order', {
+            socketio.emit('order_notification', {
                 'streamId': live_stream.id,
                 'orderInfo': order_info
-            }, namespace='/')
-            print('emit')
+            }, room=f'stream_{live_stream.id}')
+            print('Order notification emitted')
 
         return True, "결제가 성공적으로 처리되었습니다."
     except Exception as e:
@@ -190,3 +190,17 @@ def calculate_and_create_revenue(order):
             db.session.add(revenue)
     
     db.session.commit()
+    
+def update_stock(product_id, quantity):
+    product = Product.query.get(product_id)
+    product.stock -= quantity
+    if product.stock <= 5:
+        notify_low_stock(product)
+    db.session.commit()
+
+def notify_low_stock(product):
+    socketio.emit('low_stock_alert', {
+        'product_id': product.id,
+        'product_name': product.name,
+        'current_stock': product.stock
+    }, room=f'stream_{product.live_stream_id}')

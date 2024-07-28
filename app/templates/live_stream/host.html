@@ -314,20 +314,33 @@
         document.getElementById('viewerCount').textContent = data.count;
     });
 
-    socket.on('order_notification', (orderInfo) => {
-        const orderList = document.getElementById('orderList');
-        const listItem = document.createElement('li');
-        listItem.className = 'list-group-item';
-        listItem.innerHTML = `
-            <strong>${orderInfo.product_name}</strong><br>
-            수량: ${orderInfo.quantity}<br>
-            총 금액: ₩${orderInfo.total_price.toLocaleString()}
-        `;
-        orderList.prepend(listItem);
+    socket.on('order_notification', (data) => {
+        console.log('order_notification', data);
+        const orderInfo = data.orderInfo; // 서버에서 보내는 데이터 구조에 맞게 수정
+        if (orderInfo && typeof orderInfo === 'object') {
+            const orderList = document.getElementById('orderList');
+            const listItem = document.createElement('li');
+            listItem.className = 'list-group-item';
+            listItem.innerHTML = `
+                <strong>${orderInfo.product_name || '알 수 없는 상품'}</strong><br>
+                수량: ${orderInfo.quantity || 0}<br>
+                총 금액: ₩${(orderInfo.total_price || 0).toLocaleString()}
+            `;
+            orderList.prepend(listItem);
+            // 알림음 재생 (선택사항)
+            /* const audio = new Audio('/static/sounds/notification.mp3');
+            audio.play(); */
+        } else {
+            console.error('Invalid order information received:', data);
+        }
+    });
 
-        // 알림음 재생 (선택사항)
-        /* const audio = new Audio('/static/sounds/notification.mp3');
-        audio.play(); */
+    socket.on('low_stock_alert', (data) => {
+        console.log('Low stock alert', data);
+        const alertDiv = document.createElement('div');
+        alertDiv.className = 'alert alert-warning';
+        alertDiv.innerHTML = `<strong>재고 알림:</strong> ${data.product_name}의 재고가 ${data.current_stock}개 남았습니다!`;
+        document.getElementById('alertContainer').prepend(alertDiv);
     });
 </script>
 {% endblock %}

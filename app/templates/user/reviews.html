@@ -62,7 +62,7 @@
 <script>
 function deleteReview(reviewId) {
     if (confirm('정말로 이 리뷰를 삭제하시겠습니까?')) {
-        fetch(`/user/review/${reviewId}/delete`, {
+        fetch(`/review/${reviewId}/delete`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

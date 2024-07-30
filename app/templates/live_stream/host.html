@@ -337,10 +337,8 @@
 
     socket.on('low_stock_alert', (data) => {
         console.log('Low stock alert', data);
-        const alertDiv = document.createElement('div');
-        alertDiv.className = 'alert alert-warning';
-        alertDiv.innerHTML = `<strong>재고 알림:</strong> ${data.product_name}의 재고가 ${data.current_stock}개 남았습니다!`;
-        document.getElementById('alertContainer').prepend(alertDiv);
+        msg = `재고 알림: ${data.product_name}의 재고가 ${data.current_stock}개 남았습니다!`;
+        alert(msg);
     });
 </script>
 {% endblock %}

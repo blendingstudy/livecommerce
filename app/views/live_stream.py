@@ -91,3 +91,12 @@ def leave_stream_route():
 @live_stream.route('/delete_stream/<int:stream_id>', methods=['POST'])
 def delete_stream_route(stream_id):
     return delete_stream(stream_id)
+
+@live_stream.route('/api/generate_share_url/<int:stream_id>')
+def generate_share_url(stream_id):
+    stream = LiveStream.query.get_or_404(stream_id)
+    share_url = url_for('live_stream.stream_watch', stream_id=stream_id, _external=True)
+    return jsonify({
+        'url': share_url,
+        'title': stream.title
+    })

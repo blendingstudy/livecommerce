@@ -79,6 +79,7 @@ def process_payment(order_id, payment_method, transaction_id):
     order = Order.query.get(order_id)
     
     if not order:
+        print('주문을 찾을 수 없습니다.')
         return False, "주문을 찾을 수 없습니다."
 
     if order.status != 'pending':
@@ -87,7 +88,7 @@ def process_payment(order_id, payment_method, transaction_id):
     try:
         payment = Payment(
             order_id=order.id,
-            amount=order.total_price,
+            amount=order.total_price - order.discount_amount,
             payment_method=payment_method,
             transaction_id=transaction_id,
             status='completed'
@@ -199,8 +200,9 @@ def update_stock(product_id, quantity):
     db.session.commit()
 
 def notify_low_stock(product):
+    live_stream = LiveStream.query.filter_by(seller_id=product.seller_id, is_live=True).first()
     socketio.emit('low_stock_alert', {
         'product_id': product.id,
         'product_name': product.name,
         'current_stock': product.stock
-    }, room=f'stream_{product.live_stream_id}')
+    }, room=f'stream_{live_stream.id}')

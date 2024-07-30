@@ -69,7 +69,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 buyerName: document.getElementById('buyer-name').value,
                 buyerTel: document.getElementById('buyer-tel').value,
             };
-
+            
             try {
                 const paymentData = {
                     pg: "html5_inicis",
@@ -81,7 +81,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     buyer_name: orderData.buyerName,
                     buyer_tel: orderData.buyerTel,
                 };
-
+                
                 const response = await iamportPayment.requestPay(paymentData);
                 const verificationResult = await iamportPayment.verifyPayment(
                     orderData.orderId,
